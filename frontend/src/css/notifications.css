@@ -1,0 +1,32 @@
+.notifications-block {
+    display: none;
+}
+
+.dark-background {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.notifications{
+    position: fixed;
+    background-color: floralwhite;
+    top: 50px;
+    right: 40px;
+    width: 250px;
+    height: 400px;
+    border: 1px solid black;
+    border-radius: 10px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    z-index: 3;
+}
+
+.notifications::-webkit-scrollbar {
+    display: none;
+  }

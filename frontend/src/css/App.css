@@ -1,0 +1,141 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.menu {
+  background-color: rgb(240, 240, 240);
+  padding: 10px;
+  width: 23rem;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  transition: 0.5s ease;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: right;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 1rem;
+  margin-bottom: 2rem;
+}
+
+.list>* {
+  margin-top: 10px;
+}
+
+.menu .profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem;
+  margin-right: 40px;
+}
+
+svg {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+button {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.rounded-button {
+  border-radius: 20px;
+  min-width: 100px;
+  max-width: fit-content;
+}
+
+.same-width-input {
+  width: 180px;
+}
+
+.blur {
+  transition: filter 0.5s;
+}
+
+.my-form-line {
+  margin: 15px 0px;
+  width: 300px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error-message {
+  color: red;
+  height: 20px;
+}
+
+
+.auth-image {
+  background-size: cover;
+  width: 40%;
+  height: 100vh;
+}
+
+.top-buttons {
+  position: fixed;
+  top: 0px;
+  right: 50px;
+  width: 90px;
+  display: flex;
+  justify-content: space-between;
+  background-color: white;
+  padding: 0.5rem;
+  border-radius: 0 0 5px 5px;
+  z-index: 1;
+}
+
+.page-heading {
+  font-size: 1.5rem;
+  margin: 1rem 2rem 2rem;
+
+}
+
+.simple-link {
+  text-decoration: none;
+  color: black;
+}
+
+.main-content{
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 15px;
+  min-height: 85vh;
+}
+
+.main-container {
+  background-color: #312e2b;
+  min-height: 100%;
+  padding: 3rem;
+}
+
+.first-letter-margin::first-letter {
+  margin-left: 1.5rem;
+}
