@@ -2,6 +2,7 @@ import {makeAutoObservable} from 'mobx';
 
 export default class StockInfo {
   constructor() {
+    this._isLoaded = false;
     this._allStock = [];
     this._allShares = [];
     this._selectedType = ['stock', 'stock', 'stock'];
@@ -29,6 +30,8 @@ export default class StockInfo {
   set allShares(allShares) { this._allShares = allShares; }
 
   get selectedType() { return this._selectedType[this._mode]; }
+
+  getSelectedTypeByMode(mode) { return this._selectedType[mode]; }
     
   set selectedType(selectedType) { this._selectedType[this._mode] = selectedType; }
 
@@ -53,6 +56,13 @@ export default class StockInfo {
         section = all[i];
       }
     }
-    section.isActive = isActive;
+    if (! section.currentStock?.isActive) {
+      section.currentStock = all.filter(s => s.isActive)[0];
+    }
+    section.isActive = isActive; // for observer
   }
+
+  get isLoaded() { return this._isLoaded; }
+    
+  set isLoaded(isLoaded) { this._isLoaded = isLoaded; }
 }

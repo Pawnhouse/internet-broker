@@ -1,4 +1,4 @@
-<svg>
+<svg class='svg-button'>
     <line x1="2" y1="2" x2="28" y2="28" style="stroke:black;"/>
     <line x1="28" y1="2" x2="2" y2="28" style="stroke:black;"/>
 </svg>

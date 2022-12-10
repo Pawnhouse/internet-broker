@@ -19,10 +19,11 @@ function AdminPanel() {
   useEffect(() => {
     getStock().then(stock => stockInfo.allStock = stock).catch(() => { });
     getShares().then(shares => stockInfo.allShares = shares).catch(() => { });
-  });
-  const stockNav = (
+  }, [stockInfo]);
+  const stockNav = (mode) => (
     <Nav
-      variant="pills" defaultActiveKey={stockInfo.selectedType ?? 'stock'} 
+      variant="pills" 
+      defaultActiveKey={stockInfo.getSelectedTypeByMode(mode)}
       className='markets-nav-bar w-25'
       onSelect={(selectedKey) => { stockInfo.selectedType = selectedKey; }}
     >
@@ -51,11 +52,11 @@ function AdminPanel() {
           <AddShare show={shareVisible} onHide={() => setShareVisible(false)} />
         </Tab>
         <Tab eventKey="suspend" title="Suspend">
-          {stockNav}
+          {stockNav(1)}
           <StockList />
         </Tab>
         <Tab eventKey="activate" title="Restore">
-          {stockNav}
+          {stockNav(2)}
           <StockList />
 
         </Tab>

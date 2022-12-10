@@ -10,7 +10,7 @@ function ArticleAside() {
   const { articleInfo } = useContext(Context);
 
   return (
-    <Container style={{border: '1px solid black', height: '100%', borderRadius: 5}}>
+    <Container style={{border: '1.5px solid gray', height: '100%', borderRadius: 5}}>
       {
         articleInfo.allArticles.slice(0, 5).map((element) => (
           <Row key={element.sectionId}>

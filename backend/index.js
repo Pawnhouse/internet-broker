@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require('express');
 const app = express();
 const port = 5000;
@@ -7,7 +9,7 @@ const cors = require('cors');
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('D:/ТОФИ/internet-broker/backend/static/'));
+app.use(express.static(process.env.STATIC_FILES_PATH));
 app.use('/api/', router);
 
 app.use(errorHandler);

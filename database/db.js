@@ -4,18 +4,18 @@ const mysql = require('mysql');
 class DB {
   constructor() {
     this.connection = mysql.createConnection({
-      host: "localhost",
-      user: "eugene",
-      password: "!Two3456",
-      database: "broker",
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_SCHEMA,
     });
   }
 
-  query( sql, args ) {
+  query(sql, args) {
     return util.promisify(this.connection.query)
       .call(this.connection, sql, args);
   }
-  
+
   close() {
     return util.promisify(this.connection.end).call(this.connection);
   }
@@ -33,13 +33,13 @@ class DB {
   generateValues(row) {
     let keys = '(';
     let values = '(';
-    for (const key in row){ 
+    for (const key in row) {
       keys += key + ', ';
       values += JSON.stringify(row[key]) + ', ';
     }
-    if (Object.keys(row).length > 0){
+    if (Object.keys(row).length > 0) {
       keys = keys.slice(0, -2) + ')';
-      values = values.slice(0, -2) + ')'  ;    
+      values = values.slice(0, -2) + ')';
     } else {
       keys = '()';
       values = '()';
@@ -48,8 +48,8 @@ class DB {
   }
 
   generateInsertQuery(table, row) {
-    const [keys, values] = this.generateValues(row); 
-    let queryString = 'INSERT INTO ' + table + keys; 
+    const [keys, values] = this.generateValues(row);
+    let queryString = 'INSERT INTO ' + table + keys;
     queryString = queryString + ' VALUES ' + values;
     return queryString;
   }
@@ -58,8 +58,8 @@ class DB {
     const keyIndices = await this.getKeys(table);
     let keys = '';
     let values = '';
-    for (const key in row){ 
-      if (!keyIndices.includes(key)){
+    for (const key in row) {
+      if (!keyIndices.includes(key)) {
         values += key + ' = ' + JSON.stringify(row[key]) + ', ';
       }
       else {
@@ -73,10 +73,10 @@ class DB {
 
   generateCondition(condition) {
     let str = '';
-    for (const key in condition){ 
+    for (const key in condition) {
       str += key + ' = ' + JSON.stringify(condition[key]) + ' AND ';
     }
-    if (Object.keys(condition).length > 0){
+    if (Object.keys(condition).length > 0) {
       return ' WHERE ' + str.slice(0, -5);
     } else {
       return '';
@@ -86,7 +86,7 @@ class DB {
   getData(table) {
     return this.query('SELECT * FROM ' + table);
   }
-  
+
   async getDataById(table, id) {
     const results = await this.query('SELECT * FROM ' + table + ' WHERE id = ' + id);
     return results[0];
@@ -101,17 +101,17 @@ class DB {
     return user;
   }
 
-  async getConditionData(table, condition){
+  async getConditionData(table, condition) {
 
-    return this.query('SELECT * FROM ' + table + this.generateCondition(condition)); 
+    return this.query('SELECT * FROM ' + table + this.generateCondition(condition));
   }
 
   async insertData(table, row) {
     this.connection.query(this.generateInsertQuery(table, row));
   }
 
-  async insertManyRows(table, rows) { 
-    if (rows.length === 0) { 
+  async insertManyRows(table, rows) {
+    if (rows.length === 0) {
       return;
     }
     const [keys] = this.generateValues(rows[0]);
@@ -125,9 +125,9 @@ class DB {
   async updateData(table, row) {
     this.query(await this.generateUpdateQuery(table, row));
   }
-  
+
   async findByEmail(email) {
-    const user = (await this.getConditionData('person', {email}))[0];
+    const user = (await this.getConditionData('person', { email }))[0];
     if (!user) {
       return null;
     }
@@ -140,8 +140,8 @@ class DB {
   async deleteData(table, row) {
     const keyIndices = await this.getKeys(table);
     let keys = '';
-    for (const key in row){ 
-      if (keyIndices.includes(key)){
+    for (const key in row) {
+      if (keyIndices.includes(key)) {
         keys += key + ' = ' + JSON.stringify(row[key]) + ' AND ';
       }
     }

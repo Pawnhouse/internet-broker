@@ -1,9 +1,34 @@
 const ApiError = require('../../errors/apiError');
 const db = require('../../../database/db');
+const prices = require('../../prices');
+
+async function processSharesName(req, next) {
+  const sharesName = req.query.sharesName;
+  if (!sharesName) {
+    next(ApiError.badRequest('Shares name is required'));
+    return;
+  }
+  const shares = (await db.getConditionData('shares', { sharesName, isActive: true }))[0];
+  if (!shares){
+    next(ApiError.badRequest('This shares is not available'));
+    return;
+  }
+
+  const personId = req.user.id;
+  shares.stockList = await db.getConditionData('sharesStock', { sharesName: shares.sharesName });
+  await prices.setSharesPrice([shares]);
+  const balance = (await db.getConditionData('user', { personId }))[0]?.balance;
+  return [sharesName, shares, personId, balance];
+}
+
 
 class SharesController {
   async get(req, res) {
     const data = await db.getData('shares');
+    await Promise.all(data.map(async (shares) => { 
+      shares.stockList = await db.getConditionData('sharesStock', { sharesName: shares.sharesName });
+    }));
+    await prices.setSharesPrice(data);
     res.json(data);
   }
 
@@ -14,6 +39,65 @@ class SharesController {
     } else {
       res.json(0);
     }
+  }
+
+  async getCandles(req, res, next) { 
+    const result = await processSharesName(req, next);
+    if(!result) {
+      return;
+    }
+    const [sharesName, shares] = result;    
+    const data = await prices.getSharesCandles(shares); 
+    res.json(data);
+  }
+
+  async buy(req, res, next) {
+    const result = await processSharesName(req, next);
+    if(!result) {
+      return;
+    }
+    const [sharesName, shares, personId, balance] = result;
+
+    if (balance < shares.price) {
+      next(ApiError.badRequest('Not enough balance to buy'));
+      return;
+    }
+    balance = Math.round((balance - shares.price) * 100) / 100;
+    await db.updateData('user', { personId, balance });
+
+    const data = await db.getConditionData('usersShares', { personId, sharesName });
+    let number;
+    if (data.length > 0) {
+      number = data[0].number + 1;
+      await db.updateData('usersShares', { personId, sharesName, number });
+    } else {
+      number = 1;
+      await db.insertData('usersShares', { personId, sharesName, number });
+    }
+    res.json({ number, balance });
+  }
+
+  async sell(req, res, next) {
+    const result = await processSharesName(req, next);
+    if(!result) {
+      return;
+    }
+    const [sharesName, shares, personId, balance] = result;
+    const newBalance = Math.round((balance + shares.price) * 100) / 100;
+    
+
+    const data = await db.getConditionData('usersShares', { personId, sharesName });
+    let number;
+    if (data.length > 0 && data[0].number > 0) {
+      number = data[0].number - 1;
+      await db.updateData('usersShares', { personId, sharesName, number });
+    } else {
+      next(ApiError.badRequest('You dont have shares'));
+      return;
+    }
+
+    await db.updateData('user', { personId, balance: newBalance });
+    res.json({ number, balance: newBalance });
   }
 
   async put(req, res, next) {

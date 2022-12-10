@@ -68,7 +68,7 @@ class PersonController {
     const { id } = req.user;
     const { sum } = req.body;
     const { balance } = (await db.getConditionData('user', { personId: id }))[0];
-    if (balance <= sum) {
+    if (balance < sum) {
       next(ApiError.badRequest('Not enough balance to withdraw'));
       return;
     }

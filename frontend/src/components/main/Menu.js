@@ -44,7 +44,7 @@ function Menu(props) {
         }
         <MyNavLink to={PANEL_PATH}>Work panel</MyNavLink>
         <MyNavLink to={ARTICLES_PATH}>Articles</MyNavLink>
-        <MyNavLink  to={WITHDRAWAL_PATH}>Withdraw money</MyNavLink>
+        <MyNavLink to={WITHDRAWAL_PATH}>Withdraw money</MyNavLink>
         <MyNavLink to={DEPOSIT_PATH}>Make a deposite</MyNavLink>
         <MyNavLink to={STOCK_PATH} >Markets</MyNavLink>
       </nav>

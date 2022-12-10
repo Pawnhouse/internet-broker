@@ -11,14 +11,16 @@ import { getShares, getStock } from '../http/stockAPI';
 function Markets() {
   const { stockInfo } = useContext(Context);
   useEffect(() => {
-    stockInfo.mode = 'normal';
     getStock().then(stock => stockInfo.allStock = stock).catch(() => {});
     getShares().then(shares => stockInfo.allShares = shares).catch(() => {});
-  });
+  }, [stockInfo]);
+  stockInfo.mode = 'normal';
   let selectedType = stockInfo.selectedType;
   if (stockInfo.mode !== 'normal') { 
-    selectedType = 'stock';
-  }
+    //selectedType = 'stock';
+  } // delete if
+  
+  console.log('upd', stockInfo);
   return (
     <MainContainer pageName='Markets'>
       <Nav
@@ -41,7 +43,11 @@ function Markets() {
         </div>
       </Nav>
 
-      <StockList />
+      {
+        stockInfo.allStock != null && 
+        stockInfo.allShares != null &&
+        <StockList />
+      }
     </MainContainer>
   )
 }

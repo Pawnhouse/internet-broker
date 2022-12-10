@@ -1,7 +1,8 @@
 const ApiError = require('../../errors/apiError');
 const db = require('../../../database/db');
+const prices = require('../../prices');
 
-class StockController {
+class SectionController {
 
   async get(req, res, next) {
     const data = await db.getDataById('section', req.query.id);
@@ -12,9 +13,29 @@ class StockController {
     res.json(data.description);
   }
 
+  async getPortfolio(req, res) {
+    const personId = req.user.id;
+    const stockQuery = (
+      'SELECT code, sectionId, number FROM usersStock '
+      + 'INNER JOIN stock ON code = stockCode WHERE personId = '
+      + personId
+    );
+    const sharesQuery = (
+      'SELECT shares.sharesName, sectionId, number FROM usersShares '
+      + 'INNER JOIN shares ON shares.sharesName = usersShares.sharesName WHERE personId = '
+      + personId
+    );
+    
+    const userStockList = await db.query(stockQuery);
+    const userSharesList = await db.query(sharesQuery);
+    await prices.setStockPrice(userStockList);
+    await prices.setSharesPrice(userSharesList);
+    res.json(userSharesList.concat(userStockList));
+  }
+
   activation(activate, type) {
     return async function (req, res, next) {
-      const obj = req.body; 
+      const obj = req.body;
       const { sectionId } = obj;
       try {
         const existingStock = (await db.getConditionData(type, { sectionId }))[0];
@@ -30,4 +51,4 @@ class StockController {
 
 }
 
-module.exports = new StockController();
+module.exports = new SectionController();

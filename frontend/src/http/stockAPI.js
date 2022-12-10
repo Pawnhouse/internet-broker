@@ -33,6 +33,12 @@ export async function getShares() {
   return data;
 }
 
+
+export async function getPortfolio() { 
+  const { data } = await $authHost.get('/api/section/portfolio');
+  return data;
+}
+
 export async function getStockNumber(section) {
   let data;
   if (section.code) {
@@ -51,4 +57,72 @@ export async function getStockNumber(section) {
     data = res.data;
   }
   return data;
+}
+
+export async function getStockCandles(section) {/*
+  const res = await $authHost.get(
+    '/api/stock/candles',
+    { params: { stockCode } }
+  );
+  return res.data;*/
+  if (section.code) {
+    const res = await $authHost.get(
+      '/api/stock/candles',
+      { params: { stockCode: section.code } }
+    );
+    return res.data;
+
+  }
+  if (section.sharesName) {
+    const res = await $authHost.get(
+      '/api/shares/candles',
+      { params: { sharesName: section.sharesName } }
+    );
+    return res.data;
+  }
+}
+
+export async function getSharesCandles(sharesName) {
+  const res = await $authHost.get(
+    '/api/shares/candles',
+    { params: { sharesName } }
+  );
+  console.log(res.data);
+  return res.data;
+}
+
+export async function buyStock(section) {
+  if (section.code) {
+    const res = await $authHost.post(
+      '/api/stock/buy',
+      { stockCode: section.code }
+    );
+    return res.data;
+  }
+
+  if (section.sharesName) {
+    const res = await $authHost.post(
+      '/api/shares/buy',
+      { sharesName: section.sharesName }
+    );
+    return res.data;
+  }
+}
+
+export async function sellStock(section) {
+  if (section.code) {
+    const res = await $authHost.post(
+      '/api/stock/sell',
+      { stockCode: section.code }
+    );
+    return res.data;
+  }
+
+  if (section.sharesName) {
+    const res = await $authHost.post(
+      '/api/shares/sell',
+      { sharesName: section.sharesName }
+    );
+    return res.data;
+  }
 }

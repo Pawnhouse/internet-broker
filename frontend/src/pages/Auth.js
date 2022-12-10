@@ -6,7 +6,8 @@ import { controlIds, names, types } from '../utils/formData';
 import LabeledInput from '../components/LabeledInput';
 import { login, register } from '../http/userAPI';
 import { Context } from '../index';
-import {showError, hideMessage, clearSetters} from '../utils/formMessage';
+import { showError, hideMessage, clearSetters } from '../utils/formMessage';
+import PlaceholderImage from "../img/placeholderAuth.jpg";
 
 
 function Registration({ values, setters }) {
@@ -63,7 +64,7 @@ function Registration2Phase({ values, setters }) {
     hideMessage();
     let i, message;
     if (!values[3] || !values[5]) {
-      if (!values[3]){
+      if (!values[3]) {
         i = 3;
         message = 'Enter first name';
       } else {
@@ -108,7 +109,7 @@ function Registration2Phase({ values, setters }) {
 
 function SignInForm({ values, setters }) {
   const { userInfo } = useContext(Context);
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
   async function signIn(e) {
     e.preventDefault();
@@ -166,13 +167,24 @@ function Auth() {
   const [middleName, setMiddleName] = useState('');
   const [surname, setSurname] = useState('');
 
-
-
+  //<div className='auth-image' style={{ backgroundImage: `url('img/authentication.jpg')` }}></div>
+  /*
+        <LazyLoadImage
+          className='auth-image'
+          wrapperClassName='auth-image-wrapper'
+          wrapperProps={{ style: { 'background-size': 'cover' } }}
+          src='img/authentication.jpg'
+          alt='newspaper'
+          placeholderSrc={PlaceholderImage}
+        />
+  */
   const values = [email, password, password2, firstName, middleName, surname];
   const setters = [setEmail, setPassword, setPassword2, setFirstName, setMiddleName, setSurname];
   return (
     <Container className='d-flex blur p-0' fluid>
-      <div className='auth-image' style={{ backgroundImage: `url('img/authentication.jpg')` }}></div>
+      <div className='auth-image-wrapper' style={{ backgroundImage: `url(${PlaceholderImage})` }}>
+        <div className='auth-image' style={{ backgroundImage: `url('img/authentication.jpg')` }}></div>
+      </div>
       <Container className='center' style={{ width: '60%' }}>
         {isSignIn ?
           <SignInForm values={values} setters={setters} /> :

@@ -20,6 +20,10 @@ function Balance() {
 
   }, [userInfo]);
 
+  useEffect(() => {
+    hideMessage();
+  }, [isDeposit]);
+  
   const pageName = isDeposit ? 'Make a deposit' : 'Withdraw money';
   const buttonName = isDeposit ? 'Pay' : 'Withdraw';
   
@@ -34,7 +38,7 @@ function Balance() {
       showError(undefined, 'Sum should be positive', '.balance-form');
       return;
     }
-    if (+sum >= 10000 || (+sum >= balance && !isDeposit)) {
+    if (+sum >= 10000 || (+sum > balance && !isDeposit)) {
       showError(undefined, 'Sum is too big', '.balance-form');
       return;
     }

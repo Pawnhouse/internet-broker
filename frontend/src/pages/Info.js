@@ -29,9 +29,13 @@ function Info() {
   }
   const name = current.sharesName || current.code;
 
+  let headingClass = 'simple-link';
+  if (current.code) {
+    headingClass += ' stock'
+  }
   return (
     <MainContainer pageName={'Info'}>
-      <NavLink className="simple-link" to={PANEL_PATH} >{name}</NavLink>
+      <NavLink className={headingClass} to={PANEL_PATH} >{name}</NavLink>
       <div className='first-letter-margin my-3'>{description}</div>
 
     </MainContainer>
