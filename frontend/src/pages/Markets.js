@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Nav, Form } from 'react-bootstrap'
 import MainContainer from '../components/main/MainContainer';
 import '../css/markets.css';
@@ -10,23 +10,20 @@ import { getShares, getStock } from '../http/stockAPI';
 
 function Markets() {
   const { stockInfo } = useContext(Context);
+  const [searchValue, setSearchValue] = useState('');
+  const [navValue, setNavValue] = useState('stock');
   useEffect(() => {
-    getStock().then(stock => stockInfo.allStock = stock).catch(() => {});
-    getShares().then(shares => stockInfo.allShares = shares).catch(() => {});
+    getStock().then(stock => stockInfo.allStock = stock).catch(() => { });
+    getShares().then(shares => stockInfo.allShares = shares).catch(() => { });
   }, [stockInfo]);
-  stockInfo.mode = 'normal';
-  let selectedType = stockInfo.selectedType;
-  if (stockInfo.mode !== 'normal') { 
-    //selectedType = 'stock';
-  } // delete if
-  
-  console.log('upd', stockInfo);
+
   return (
     <MainContainer pageName='Markets'>
       <Nav
-        variant="pills" defaultActiveKey={selectedType} 
+        variant="pills"
+        activeKey={navValue}
         className='markets-nav-bar'
-        onSelect={(selectedKey) => { stockInfo.selectedType = selectedKey; }}
+        onSelect={(selectedKey) => setNavValue(selectedKey)}
       >
         <Nav.Item>
           <Nav.Link eventKey='stock' className='markets-nav center'>Stock</Nav.Link>
@@ -38,15 +35,19 @@ function Markets() {
           <Nav.Link eventKey="portfolio" className='markets-nav center'>Portfolio</Nav.Link>
         </Nav.Item>
         <div style={{ display: 'flex' }}>
-          <Form.Control className="same-width-input m-2" />
+          <Form.Control
+            className="same-width-input m-2"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+          />
           <button className='svg search-button'><Search /></button>
         </div>
       </Nav>
 
       {
-        stockInfo.allStock != null && 
+        stockInfo.allStock != null &&
         stockInfo.allShares != null &&
-        <StockList />
+        <StockList filterValue={searchValue} type={navValue} mode='normal'/>
       }
     </MainContainer>
   )

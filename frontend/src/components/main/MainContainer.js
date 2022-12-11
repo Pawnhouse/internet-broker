@@ -3,9 +3,8 @@ import { Container } from 'react-bootstrap';
 
 
 function MainContainer(props) {
-  const className = props.className ?? ''; // remove
   return (
-    <div className={'blur main-container' + className}>
+    <div className='blur main-container'>
       <Container className='main-content'>
         <h2 className='page-heading'>{props.pageName}</h2>
         {props.children}

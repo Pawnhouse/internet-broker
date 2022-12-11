@@ -1,20 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Row, Col, Button, FormControl } from 'react-bootstrap';
-import MainContainer from '../components/main/MainContainer';
-import ArticleAside from '../components/ArticleAside';
+import { Row, Col, Button } from 'react-bootstrap';
 import { Context } from '../index';
-import CommentItem from '../components/CommentItem';
-import AddArticle from '../components/modals/AddArticle';
 import { buyStock, getStockCandles, getStockNumber, sellStock } from '../http/stockAPI';
 import { getBalance } from '../http/userAPI';
+
+import MainContainer from '../components/main/MainContainer';
+import ArticleAside from '../components/ArticleAside';
+import AddArticle from '../components/modals/AddArticle';
 import Chart from '../components/Chart';
 import ErrorModal from '../components/modals/ErrorModal';
 import standardPicture from '../img/standard.jpg';
 import stockLoad from '../utils/stockLoad';
+import CommentBlock from '../components/CommentBlock';
 
 
 function Panel() {
-  const { stockInfo, commentInfo, userInfo } = useContext(Context);
+  const { stockInfo, userInfo } = useContext(Context);
   const [stock, setStock] = useState(stockInfo.currentStock);
 
   const [error, setError] = useState({ show: false, message: 'error' });
@@ -61,8 +62,6 @@ function Panel() {
   if (!stock) {
     return <div className='blur'>No stock available</div>
   }
-  commentInfo.currentSection = { id: stock.sectionId, type: 'stock' };
-  stockInfo.currentStock = stock;
 
   const pageName = stock.code ?? stock.sharesName;
   let picture = standardPicture;
@@ -93,19 +92,23 @@ function Panel() {
 
       <Row className='my-3'>
         <Col md={2}>
-          Price: {price + '$'}
+          Price: {price ? price + '$' : '?'}
         </Col>
         <Col>
           {
-            number && userInfo.user.role === 'user' && <span>{'You own: ' + number}</span>
+            !!number && userInfo.user.role === 'user' && <span>{'You own: ' + number}</span>
           }
         </Col>
       </Row>
       {
         userInfo.user.role === 'user' &&
         <Row className='align-items-center gy-3'>
-          <Col md={2}><Button variant='success' className='rounded-button' onClick={buttonAction(buyStock)}>Buy</Button></Col>
-          <Col md={2}><Button variant='danger' className='rounded-button' onClick={buttonAction(sellStock)}>Sell</Button></Col>
+          <Col md={2}>
+            <Button variant='success' className='rounded-button' onClick={buttonAction(buyStock)}>Buy</Button>
+          </Col>
+          <Col md={2}>
+            <Button variant='danger' className='rounded-button' onClick={buttonAction(sellStock)}>Sell</Button>
+          </Col>
           <Col>{'Balance: ' + balance + '$'}</Col>
           <ErrorModal show={error.show} message={error.message} onHide={() => { setError({ show: false }) }} />
         </Row>
@@ -114,26 +117,11 @@ function Panel() {
         userInfo.user.role === 'analyst' &&
         <>
           <Button className='rounded-button' onClick={() => setArticleVisible(true)}>Write article</Button>
-          <AddArticle show={articleVisible} onHide={() => setArticleVisible(false)} sectionName={pageName} />
-
+          <AddArticle show={articleVisible} onHide={() => setArticleVisible(false)} sectionId={stock.sectionId} />
         </>
       }
-
-      <Row className='align-items-end my-3'>
-        <Col md={8}>
-          <FormControl as="textarea" rows={3} />
-        </Col>
-        <Col>
-          <Button className='rounded-button'>Post</Button>
-        </Col>
-      </Row>
-      {
-        false &&
-        commentInfo.currentSectionComments.map((comment, index) => {
-          return <CommentItem comment={comment} key={comment.id} isBlue={index % 2} />
-        })
-      }
-      <img src={picture} style={{display: 'none'}} alt='profile'/>
+      <CommentBlock />
+      <img src={picture} style={{ display: 'none' }} alt='profile' />
     </MainContainer>
   )
 }

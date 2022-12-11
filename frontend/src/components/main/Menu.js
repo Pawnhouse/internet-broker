@@ -4,13 +4,13 @@ import { Context } from '../../index';
 import { ReactComponent as Cross } from '../../img/cross.svg';
 import standardPicture from '../../img/standard.jpg';
 import { observer } from 'mobx-react-lite';
-import { ADMIN_PATH, ARTICLES_PATH, DEPOSIT_PATH, PANEL_PATH, PROFILE_PATH, STOCK_PATH, WITHDRAWAL_PATH } from '../../utils/paths';
+import { ADMIN_PATH, DEPOSIT_PATH, PANEL_PATH, PROFILE_PATH, STOCK_PATH, WITHDRAWAL_PATH } from '../../utils/paths';
 
 
 function Menu(props) {
   const { userInfo } = useContext(Context);
   const user = userInfo.user;
-  let name = user.firstName + ' ' + user.surname; 
+  let name = user.firstName + ' ' + user.surname;
   let picture = standardPicture;
   if (user.picture) {
     picture = process.env.REACT_APP_API_URL + '/' + user.picture;
@@ -43,9 +43,13 @@ function Menu(props) {
           <MyNavLink to={ADMIN_PATH}>Admin panel</MyNavLink>
         }
         <MyNavLink to={PANEL_PATH}>Work panel</MyNavLink>
-        <MyNavLink to={ARTICLES_PATH}>Articles</MyNavLink>
-        <MyNavLink to={WITHDRAWAL_PATH}>Withdraw money</MyNavLink>
-        <MyNavLink to={DEPOSIT_PATH}>Make a deposite</MyNavLink>
+        {
+          user.role === 'user' &&
+          <>
+            <MyNavLink to={WITHDRAWAL_PATH}>Withdraw money</MyNavLink>
+            <MyNavLink to={DEPOSIT_PATH}>Make a deposite</MyNavLink>
+          </>
+        }
         <MyNavLink to={STOCK_PATH} >Markets</MyNavLink>
       </nav>
       <nav className="list">

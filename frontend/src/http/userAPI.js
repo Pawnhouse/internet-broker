@@ -21,7 +21,7 @@ export async function login(email, password) {
   return jwt_decode(data);
 }
 
-export default async function check() {
+export async function check() {
   const { data } = await $authHost.get('/api/person/auth');
   localStorage.setItem('token', data);
   return jwt_decode(data);
@@ -38,7 +38,7 @@ export async function newPicture(formData) {
 }
 
 export async function getBalance() {
-  const { data } = await $authHost.get('/api/person/user-data'); 
+  const { data } = await $authHost.get('/api/person/user-data');
   return data.balance;
 }
 
@@ -48,11 +48,20 @@ export async function getIsVip() {
 }
 
 export async function makeTransaction(sum, isDeposit) {
-  if (isDeposit) { 
+  if (isDeposit) {
     const { data } = await $authHost.post('api/person/deposit', { sum });
     return data;
-  } else{ 
+  } else {
     const { data } = await $authHost.post('api/person/withdrawal', { sum });
     return data;
   }
+}
+
+export async function getCompany() {
+  const { data } = await $authHost.get('/api/person/company');
+  return data;
+}
+
+export async function updateCompany(company) {
+  await $authHost.post('/api/person/company', { company });
 }

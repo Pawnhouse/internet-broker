@@ -77,16 +77,15 @@ class Prices {
     const candlesList = shares.stockList.map(stock => stock.candles);
     const length = candlesList.reduce((acc, value) => Math.min(acc, value.o.length), candlesList[0].o.length); 
     
-    //const initialArray = Array.from({ length }, (v, i) => 0);
     const candles = { o: Array.from({ length }, () => 0)};
     candlesList.forEach(element => {
       for (let i = 0; i < length; i++) {
         candles.o[i] += element.o[i];
       }
-    }); console.log(candles);
+    }); 
     for (let i = 0; i < length; i++) {
       candles.o[i] = candles.o[i] / candlesList.length;
-    }console.log(candles);
+    }
     candles.t = candlesList[0].t;
     candles.s = 'ok';
 
@@ -105,8 +104,8 @@ class Prices {
 
   setSharesPrice(sharesList) {
     return Promise.all(sharesList.map(async (shares) => {
-      await this.setStockPrice(shares.stockList); //console.log('price computation', shares.stockList);
-      shares.price = shares.stockList.reduce((sum, shares) => sum + shares.price, 0) / shares.stockList.length; //console.log('price=', shares.price)
+      await this.setStockPrice(shares.stockList);
+      shares.price = shares.stockList.reduce((sum, shares) => sum + shares.price, 0) / shares.stockList.length;
       shares.price = Math.floor(shares.price * 100) / 100;
     }));
   }

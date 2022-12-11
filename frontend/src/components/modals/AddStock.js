@@ -1,13 +1,18 @@
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { Button, Form, Modal } from "react-bootstrap"
 import { createStock } from "../../http/stockAPI";
+import stockLoad from "../../utils/stockLoad";
+import { Context } from '../../index';
 
 function AddStock({ show, onHide }) {
+  const { stockInfo } = useContext(Context);
   const [code, setCode] = useState('');
   const [description, setDescription] = useState('');
 
   function add() {
     createStock(code, description, true).then(() => {
+      stockInfo.isLoaded = false;
+      stockLoad(stockInfo);
       onHide();
     }).catch(() => { });
   }

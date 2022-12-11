@@ -17,17 +17,22 @@ class SectionController {
     const personId = req.user.id;
     const stockQuery = (
       'SELECT code, sectionId, number FROM usersStock '
-      + 'INNER JOIN stock ON code = stockCode WHERE personId = '
+      + 'INNER JOIN stock ON code = stockCode '
+      + 'WHERE number > 0 and personId = '
       + personId
     );
     const sharesQuery = (
       'SELECT shares.sharesName, sectionId, number FROM usersShares '
-      + 'INNER JOIN shares ON shares.sharesName = usersShares.sharesName WHERE personId = '
+      + 'INNER JOIN shares ON shares.sharesName = usersShares.sharesName '
+      + 'WHERE number > 0 and personId = '
       + personId
     );
     
     const userStockList = await db.query(stockQuery);
     const userSharesList = await db.query(sharesQuery);
+    await Promise.all(userSharesList.map(async (shares) => {
+      shares.stockList = await db.getConditionData('sharesStock', { sharesName: shares.sharesName });
+    }));
     await prices.setStockPrice(userStockList);
     await prices.setSharesPrice(userSharesList);
     res.json(userSharesList.concat(userStockList));

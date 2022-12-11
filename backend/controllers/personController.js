@@ -99,9 +99,19 @@ class PersonController {
     res.json(token);
   }
 
+  async setCompany(req, res, next) {
+    await db.updateData('analyst', {personId: req.user.id, company: req.body.company});
+    res.status(200).send();
+  }
+
   async getSimpleUserData(req, res) {
     const data = (await db.getConditionData('user', {personId: req.user.id}))[0];
     res.json(data);
+  }
+
+  async getCompany(req, res) { 
+    const data = (await db.getConditionData('analyst', {personId: req.user.id}))[0];
+    res.json(data?.company);   
   }
 
   async addPicture(req, res, next) {

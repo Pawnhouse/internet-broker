@@ -16,6 +16,10 @@ async function processStockCode(req, next) {
 
   const personId = req.user.id;
   const price = await prices.getStockPrice(stockCode);
+  if (price == null) {
+    next(ApiError.badRequest('Network error, can not compute price'));
+    return;
+  }
   const { balance } = (await db.getConditionData('user', { personId }))[0];
   return [stockCode, personId, price, balance];
 }
@@ -47,21 +51,7 @@ class StockController {
     if(!result) {
       return;
     }
-    const [stockCode, personId, price, balance] = result;/*
-    const stockCode = req.body.stockCode;
-    if (!stockCode) {
-      next(ApiError.badRequest('Stock code is required'));
-      return;
-    }
-    if ((await db.getConditionData('stock', { code: stockCode, isActive: true })).length == 0){
-      next(ApiError.badRequest('This stock is not available'));
-      return;
-    }
-
-    const personId = req.user.id;
-    const price = Math.ceil(await prices.getStockPrice(stockCode), 2);
-    let { balance } = (await db.getConditionData('user', { personId }))[0];
-    */
+    const [stockCode, personId, price, balance] = result;
     if (balance < price) {
       next(ApiError.badRequest('Not enough balance to buy'));
       return;
@@ -86,20 +76,7 @@ class StockController {
     if(!result) {
       return;
     }
-    const [stockCode, personId, price, balance] = result;/*
-    const stockCode = req.body.stockCode;
-    if (!stockCode) {
-      next(ApiError.badRequest('Stock code is required'));
-      return;
-    }
-    if ((await db.getConditionData('stock', { code: stockCode, isActive: true })).length == 0){
-      next(ApiError.badRequest('This stock is not available'));
-      return;
-    }
-
-    const personId = req.user.id;
-    const price = Math.floor(await prices.getStockPrice(stockCode), 2);
-    let { balance } = (await db.getConditionData('user', { personId }))[0];*/
+    const [stockCode, personId, price, balance] = result;
     const newBalance = Math.round((balance + price) * 100) / 100;
     
     const data = await db.getConditionData('usersStock', { personId, stockCode });
@@ -122,7 +99,7 @@ class StockController {
     const existingStock = (await db.getConditionData('stock', { code }))[0];
 
     if (!existingStock) {
-      const query = db.generateInsertQuery('section', { description });
+      const query = db.generateInsertQuery('section', { description, type: 'stock' });
       db.connection.query(query, function (err, result) {
         if (err) throw err;
         db.insertData(

@@ -59,12 +59,7 @@ export async function getStockNumber(section) {
   return data;
 }
 
-export async function getStockCandles(section) {/*
-  const res = await $authHost.get(
-    '/api/stock/candles',
-    { params: { stockCode } }
-  );
-  return res.data;*/
+export async function getStockCandles(section) {
   if (section.code) {
     const res = await $authHost.get(
       '/api/stock/candles',
@@ -87,7 +82,6 @@ export async function getSharesCandles(sharesName) {
     '/api/shares/candles',
     { params: { sharesName } }
   );
-  console.log(res.data);
   return res.data;
 }
 

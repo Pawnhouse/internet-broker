@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Button, Form, Modal } from "react-bootstrap"
 import { createShares } from "../../http/stockAPI";
+import stockLoad from "../../utils/stockLoad";
+import { Context } from '../../index';
 
 function AddShare({ show, onHide }) {
+  const { stockInfo } = useContext(Context);
   const [sharesName, setSharesName] = useState('');
   const [stockList, setStockList] = useState('');
   const [description, setDescription] = useState('');
 
   function add() {
     createShares(sharesName, stockList.split(' '), description, true).then(() => {
+      stockInfo.isLoaded = false;
+      stockLoad(stockInfo);
       onHide();
     }).catch(() => { });
   }

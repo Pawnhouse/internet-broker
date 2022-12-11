@@ -3,13 +3,13 @@ const db = require('../../../database/db');
 const prices = require('../../prices');
 
 async function processSharesName(req, next) {
-  const sharesName = req.query.sharesName;
+  const sharesName = req.body.sharesName || req.query.sharesName;
   if (!sharesName) {
     next(ApiError.badRequest('Shares name is required'));
     return;
   }
   const shares = (await db.getConditionData('shares', { sharesName, isActive: true }))[0];
-  if (!shares){
+  if (!shares) {
     next(ApiError.badRequest('This shares is not available'));
     return;
   }
@@ -17,6 +17,10 @@ async function processSharesName(req, next) {
   const personId = req.user.id;
   shares.stockList = await db.getConditionData('sharesStock', { sharesName: shares.sharesName });
   await prices.setSharesPrice([shares]);
+  if (shares.price == null) {
+    next(ApiError.badRequest('Network error, can not compute price'));
+    return;
+  }
   const balance = (await db.getConditionData('user', { personId }))[0]?.balance;
   return [sharesName, shares, personId, balance];
 }
@@ -25,7 +29,7 @@ async function processSharesName(req, next) {
 class SharesController {
   async get(req, res) {
     const data = await db.getData('shares');
-    await Promise.all(data.map(async (shares) => { 
+    await Promise.all(data.map(async (shares) => {
       shares.stockList = await db.getConditionData('sharesStock', { sharesName: shares.sharesName });
     }));
     await prices.setSharesPrice(data);
@@ -33,7 +37,7 @@ class SharesController {
   }
 
   async getCount(req, res) {
-    const data = await db.getConditionData('usersShares', {personId: req.user.id, sharesName: req.query.sharesName});
+    const data = await db.getConditionData('usersShares', { personId: req.user.id, sharesName: req.query.sharesName });
     if (data.length > 0) {
       res.json(data[0].number);
     } else {
@@ -41,19 +45,19 @@ class SharesController {
     }
   }
 
-  async getCandles(req, res, next) { 
+  async getCandles(req, res, next) {
     const result = await processSharesName(req, next);
-    if(!result) {
+    if (!result) {
       return;
     }
-    const [sharesName, shares] = result;    
-    const data = await prices.getSharesCandles(shares); 
+    const [sharesName, shares] = result;
+    const data = await prices.getSharesCandles(shares);
     res.json(data);
   }
 
   async buy(req, res, next) {
     const result = await processSharesName(req, next);
-    if(!result) {
+    if (!result) {
       return;
     }
     const [sharesName, shares, personId, balance] = result;
@@ -62,8 +66,8 @@ class SharesController {
       next(ApiError.badRequest('Not enough balance to buy'));
       return;
     }
-    balance = Math.round((balance - shares.price) * 100) / 100;
-    await db.updateData('user', { personId, balance });
+    const newBalance = Math.round((balance - shares.price) * 100) / 100;
+    await db.updateData('user', { personId, balance: newBalance});
 
     const data = await db.getConditionData('usersShares', { personId, sharesName });
     let number;
@@ -74,17 +78,17 @@ class SharesController {
       number = 1;
       await db.insertData('usersShares', { personId, sharesName, number });
     }
-    res.json({ number, balance });
+    res.json({ number, balance: newBalance});
   }
 
   async sell(req, res, next) {
     const result = await processSharesName(req, next);
-    if(!result) {
+    if (!result) {
       return;
     }
     const [sharesName, shares, personId, balance] = result;
     const newBalance = Math.round((balance + shares.price) * 100) / 100;
-    
+
 
     const data = await db.getConditionData('usersShares', { personId, sharesName });
     let number;
@@ -122,7 +126,7 @@ class SharesController {
 
     await db.deleteData('sharesStock', { sharesName });
     if (!existingShares) {
-      const query = db.generateInsertQuery('section', { description });
+      const query = db.generateInsertQuery('section', { description, type: 'shares' });
       db.connection.query(query, async function (err, result) {
         if (err) throw err;
         await db.insertData(
@@ -130,7 +134,7 @@ class SharesController {
           { sectionId: result.insertId, sharesName, isActive }
         )
         try {
-          await db.insertManyRows('sharesStock', stockList.map((stockCode) => { stockCode, sharesName }));
+          await db.insertManyRows('sharesStock', stockList.map((stockCode) => ({ stockCode, sharesName })));
         } finally {
           res.status(200).send();
         }

@@ -167,23 +167,15 @@ function Auth() {
   const [middleName, setMiddleName] = useState('');
   const [surname, setSurname] = useState('');
 
-  //<div className='auth-image' style={{ backgroundImage: `url('img/authentication.jpg')` }}></div>
-  /*
-        <LazyLoadImage
-          className='auth-image'
-          wrapperClassName='auth-image-wrapper'
-          wrapperProps={{ style: { 'background-size': 'cover' } }}
-          src='img/authentication.jpg'
-          alt='newspaper'
-          placeholderSrc={PlaceholderImage}
-        />
-  */
+  const placeholderImage = new Image();
+  placeholderImage.src = PlaceholderImage;
+  placeholderImage.onload = () => document.querySelector('.auth-image').style.backgroundImage = `url('img/authentication.jpg')`;
   const values = [email, password, password2, firstName, middleName, surname];
   const setters = [setEmail, setPassword, setPassword2, setFirstName, setMiddleName, setSurname];
   return (
     <Container className='d-flex blur p-0' fluid>
       <div className='auth-image-wrapper' style={{ backgroundImage: `url(${PlaceholderImage})` }}>
-        <div className='auth-image' style={{ backgroundImage: `url('img/authentication.jpg')` }}></div>
+        <div className='auth-image' ></div>
       </div>
       <Container className='center' style={{ width: '60%' }}>
         {isSignIn ?

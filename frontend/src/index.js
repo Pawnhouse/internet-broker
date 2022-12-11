@@ -3,8 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './css/index.css';
 import App from './App';
 import UserInfo from './storage/User';
-import stockInfo from './storage/Stock';
-import CommentInfo from './storage/Comment';
+import StockInfo from './storage/Stock';
 import ArticleInfo from './storage/Article';
 import NotificationInfo from './storage/Notification';
 
@@ -15,8 +14,7 @@ root.render(
   <React.StrictMode>
     <Context.Provider value={{
         userInfo: new UserInfo(),
-        stockInfo: new stockInfo(),
-        commentInfo: new CommentInfo(),
+        stockInfo: new StockInfo(),
         articleInfo: new ArticleInfo(),
         notificationInfo: new NotificationInfo(),
       }}>

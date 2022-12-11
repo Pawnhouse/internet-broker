@@ -1,6 +1,20 @@
+import { useState, useContext } from "react";
 import { Button, Form, Modal } from "react-bootstrap"
+import { createArticle } from "../../http/descriptionAPI";
+import { Context } from '../../index';
 
-function AddArticle({ show, onHide, sectionName}) {
+
+function AddArticle({ show, onHide, sectionId }) {
+  const { articleInfo } = useContext(Context);
+  const [headline, setHeadlne] = useState('');
+  const [text, setText] = useState('');
+
+  function add() {
+    createArticle(headline, text, sectionId).then((article) => {
+      articleInfo.allArticles = [article, ...articleInfo.allArticles];
+      onHide();
+    }).catch(() => { });
+  }
   return (
     <Modal
       show={show}
@@ -15,14 +29,21 @@ function AddArticle({ show, onHide, sectionName}) {
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Control placeholder="Headline" className="mb-3"/>
-          <Form.Control placeholder="Stock name" className="mb-3" defaultValue={sectionName}/>
-          <Form.Control as="textarea" placeholder="Text"/>
+          <Form.Control
+            placeholder="Headline"
+            className="mb-3"
+            onChange={(e) => setHeadlne(e.target.value)}
+          />
+          <Form.Control
+            as="textarea"
+            placeholder="Text"
+            onChange={(e) => setText(e.target.value)}
+          />
         </Form>
       </Modal.Body>
       <Modal.Footer>
         <Button onClick={onHide} variant='secondary'>Close</Button>
-        <Button onClick={onHide}>Add</Button>
+        <Button onClick={add}>Add</Button>
       </Modal.Footer>
     </Modal>
   )

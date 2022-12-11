@@ -10,10 +10,9 @@ import { INFO_PATH, PANEL_PATH } from '../utils/paths';
 import { activate, getPortfolio } from '../http/stockAPI';
 
 
-const StockItem = observer(({ name, sectionId, price, number, isActive }) => {
+const StockItem = ({ name, sectionId, price, number, isActive, type, mode }) => {
   const { stockInfo } = useContext(Context);
   const navigate = useNavigate();
-  const type = stockInfo.selectedType;
   let priceLabel = '?';
   if (price != null) {
     priceLabel = price + '$';
@@ -48,16 +47,16 @@ const StockItem = observer(({ name, sectionId, price, number, isActive }) => {
           </span>
         </button>
         {
-          stockInfo.mode === 'normal' && 
+          mode === 'normal' &&
           type !== 'portfolio' &&
           <button className='svg' onClick={() => navigate(INFO_PATH + '/' + sectionId)}><Info /></button>
         }
         {
-          stockInfo.mode === 'suspend' &&
+          mode === 'suspend' &&
           <button className='svg' onClick={() => activateAction(false)}><Cross /></button>
         }
         {
-          stockInfo.mode === 'activate' &&
+          mode === 'activate' &&
           <button className='svg' onClick={() => activateAction(true)}><CheckMark /></button>
         }
         {
@@ -67,29 +66,35 @@ const StockItem = observer(({ name, sectionId, price, number, isActive }) => {
       </div>
     </Col>
   )
+}
 
-})
-
-function StockList() {
+function StockList(props) {
+  const { type, mode } = props;
   const { stockInfo, userInfo } = useContext(Context);
   const [portfolio, setPortfolio] = useState([]);
-  const selectedType = stockInfo.selectedType;
-  const isStock = selectedType === 'stock';
-  const isShare = selectedType === 'shares';
-  const isPortfolio = selectedType === 'portfolio';
-
   useEffect(() => {
     if (userInfo.user.role === 'user') {
       getPortfolio().then(portfolio => setPortfolio(portfolio)).catch(() => { });
     }
   }, [userInfo]);
 
+  let [stockList, sharesList, portfolioList] = [
+    stockInfo.allStock,
+    stockInfo.allShares,
+    portfolio
+  ].map(list => list.filter(
+    item => !props.filterValue || ((item.code || item.sharesName) === props.filterValue)
+  ));
+  stockList = stockList.filter(item => item.isActive ^ (props.mode === 'activate'));
+  sharesList = sharesList.filter(item => item.isActive ^ (props.mode === 'activate'));
   return (
     <Container className='mt-5'>
       <Row>
         {
-          isStock && stockInfo.allActiveStock.map((stock) =>
+          type === 'stock' && stockList.map((stock) =>
             <StockItem
+              type={type}
+              mode={mode}
               name={stock.code}
               sectionId={stock.sectionId}
               price={stock.price}
@@ -99,8 +104,10 @@ function StockList() {
           )
         }
         {
-          isShare && stockInfo.allActiveShares.map((share) =>
+          type === 'shares' && sharesList.map((share) =>
             <StockItem
+              type={type}
+              mode={mode}
               name={share.sharesName}
               sectionId={share.sectionId}
               price={share.price}
@@ -110,8 +117,10 @@ function StockList() {
           )
         }
         {
-          isPortfolio && portfolio.map((share) =>
+          type === 'portfolio' && portfolioList.map((share) =>
             <StockItem
+              type={type}
+              mode={mode}
               name={share.sharesName || share.code}
               sectionId={share.sectionId}
               number={share.number}
