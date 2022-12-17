@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@stripe/react-stripe-js": "^1.16.1",
+    "@stripe/stripe-js": "^1.46.0",
+    "axios": "^1.2.1",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -10,8 +13,10 @@
     "jwt-decode": "^3.1.2",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
+    "nodemailer": "^6.8.0",
     "nodemon": "^2.0.20",
-    "sequelize": "^6.25.5"
+    "sequelize": "^6.25.5",
+    "stripe": "^11.3.0"
   },
   "name": "internet-broker",
   "description": "Баяк Евгений Игоревич, группа 953505",

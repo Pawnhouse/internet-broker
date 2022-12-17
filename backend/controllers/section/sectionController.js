@@ -1,6 +1,6 @@
 const ApiError = require('../../errors/apiError');
 const db = require('../../../database/db');
-const prices = require('../../prices');
+const prices = require('../../utils/prices');
 
 class SectionController {
 

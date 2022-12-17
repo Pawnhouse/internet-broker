@@ -5,6 +5,7 @@ const controlIds = [
   'firstName',
   'middleName', 
   'surname',
+  'phone',
   'file', 
   'company',
 ];
@@ -15,6 +16,7 @@ const names = [
   'First Name',
   'Middle Name', 
   'Surname',
+  'Phone Number',
   'Profile Picture', 
   'Company',
 ];
@@ -25,6 +27,7 @@ const types = [
   'text',
   'text', 
   'text',
+  'phone',
   'file', 
   'text',
 ];

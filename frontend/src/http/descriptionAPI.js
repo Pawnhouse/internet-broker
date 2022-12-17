@@ -19,13 +19,28 @@ export async function getArticles() {
   return data;
 }
 
-export async function createArticle(
-  headline, text, about, date = new Date().toISOString().slice(0, 19).replace('T', ' ')
+export async function writeArticle(
+  headline, text, about, isClosed, sectionId, 
+  date = new Date().toISOString().slice(0, 19).replace('T', ' ')
 ) {
   const { data } = await $authHost.post(
-    '/api/article/create',
-    { headline, text, about, date }
+    '/api/article/write',
+    { headline, text, about, isClosed, sectionId, date }
   );
   data.date = new Date(data.date);
   return data;
+}
+
+export function editArticleText(id, text) {
+  return $authHost.post( '/api/article/edit-text', { id, text });
+}
+
+export function deleteArticle(sectionId) {
+   return $authHost.delete(
+    '/api/article/' + sectionId
+    );
+}
+
+export function addPicture(formData) {
+  return $authHost.post('api/article/picture', formData);
 }

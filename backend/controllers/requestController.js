@@ -42,7 +42,6 @@ class RequestController {
   }
 
   async approve(req, res) {
-    res.status(200).send();
     const userRequest = await db.getDataById('request', req.body.id);
     if (userRequest.role == 'vip') {
       const user = (await db.getConditionData('user', { personId: userRequest.personId }))[0];
@@ -50,9 +49,13 @@ class RequestController {
       db.updateData('user', user);
       return;
     }
-    db.insertData(userRequest.role, { personId: userRequest.personId });
-    db.updateData('person', { id: userRequest.personId, role: userRequest.role });
-    db.deleteData('request', { id: req.body.id });
+    const list = await db.getConditionData(userRequest.role, { personId: userRequest.personId });
+    if (list.length === 0) {
+      await db.insertData(userRequest.role, { personId: userRequest.personId });
+    }
+    await db.updateData('person', { id: userRequest.personId, role: userRequest.role });
+    await db.deleteData('request', { id: req.body.id });
+    res.status(200).send();
   }
 }
 

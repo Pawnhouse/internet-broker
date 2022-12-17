@@ -10,6 +10,7 @@ import SlidingPane from "react-sliding-pane";
 import "react-sliding-pane/dist/react-sliding-pane.css";
 import { observer } from 'mobx-react-lite';
 import { check } from './http/userAPI';
+import Header from './components/main/Header';
 
 function App() {
   const { userInfo } = useContext(Context);
@@ -17,12 +18,12 @@ function App() {
   const [state, setState] = useState({
     isPaneOpen: false,
   });
-  
+
   useEffect(() => {
     check().then(data => {
       userInfo.user = data;
       userInfo.isAuthenticated = true;
-    }).catch(() => userInfo.isAuthenticated = false).finally(()=> isLoading(false));
+    }).catch(() => userInfo.isAuthenticated = false).finally(() => isLoading(false));
   });
   if (loading) {
     return <div></div>
@@ -31,7 +32,7 @@ function App() {
   function closeMenu() {
     setState({ isPaneOpen: false });
     document.querySelector('.blur').style.filter = null;
-    setTimeout(() => { 
+    setTimeout(() => {
       const topButtons = document.querySelector('.top-buttons');
       if (topButtons) {
         topButtons.style.zIndex = 1;
@@ -49,6 +50,7 @@ function App() {
       {
         userInfo.isAuthenticated &&
         <>
+          <Header /> 
           <Buttons onRequestOpen={openMenu} />
           <Notifications />
           <SlidingPane

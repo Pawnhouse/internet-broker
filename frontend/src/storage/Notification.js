@@ -3,16 +3,12 @@ import { makeAutoObservable } from 'mobx';
 export default class NotificationInfo {
   constructor() {
     this._requests = [];
-    this._notifications = [
-      { id: 1, text: 'Hello. some comment text', sender: { name: 'no non', id: 2 }, receiver: {  id: 1 }, date: new Date() },
-      { id: 2, text: 'Hello. some comment text', sender: { name: 'no non', id: 2 }, receiver: {  id: 1 }, date: new Date() },
-
-    ];
+    this._notifications = [];
     makeAutoObservable(this);
   }
 
   getNotifications(userId) {
-    const notifications = this._notifications.filter(notification => notification.receiver.id === userId);
+    const notifications = this._notifications.filter(notification => notification.receiverId === userId);
     return notifications.sort((a, b) => a.date.getTime() - b.date.getTime());
   }
 

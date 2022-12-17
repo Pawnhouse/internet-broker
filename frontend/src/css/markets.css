@@ -23,8 +23,8 @@
     padding: 10px;
     justify-content: space-between;
     border-bottom: solid 1px black;
+    background-color: white;
 }
-
 
 .stock{
     text-transform: uppercase;
@@ -33,4 +33,14 @@
 
 .stock::before {
     content: '$';
+}
+
+@media (max-width: 600px) {
+    .markets-nav-bar {
+        justify-content: space-between;
+        align-items: flex-start;
+        width: inherit;
+        height: 170px;
+        font-size: 1.2rem;
+    }
 }

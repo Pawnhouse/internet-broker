@@ -12,10 +12,17 @@ export async function register(
   return jwt_decode(data);
 }
 
-export async function login(email, password) {
-  const { data } = await $host.post(
+export function login(email, password) {
+  return $host.post(
     '/api/person/login',
     { email, password }
+  );
+}
+
+export async function loginOneTimePassword(email, oneTimePassword) {
+  const { data } = await $host.post(
+    '/api/person/one-time',
+    { email, oneTimePassword }
   );
   localStorage.setItem('token', data);
   return jwt_decode(data);
@@ -31,6 +38,10 @@ export async function updateUser(user) {
   const { data } = await $authHost.post('/api/person/', user);
   localStorage.setItem('token', data);
   return jwt_decode(data);
+}
+
+export function updateRole(id, role) {
+  return $authHost.post('/api/person/', {id, role});
 }
 
 export async function newPicture(formData) {
@@ -52,9 +63,13 @@ export async function makeTransaction(sum, isDeposit) {
     const { data } = await $authHost.post('api/person/deposit', { sum });
     return data;
   } else {
-    const { data } = await $authHost.post('api/person/withdrawal', { sum });
-    return data;
+    await $authHost.post('api/person/withdrawal', { sum });
   }
+}
+
+export async function checkDeposit() {
+  const { data } = await $authHost.get('/api/person/check-deposit');
+  return data.status;
 }
 
 export async function getCompany() {
@@ -64,4 +79,9 @@ export async function getCompany() {
 
 export async function updateCompany(company) {
   await $authHost.post('/api/person/company', { company });
+}
+
+export async function getUser(personId='') {
+  const { data } = await $authHost.get('/api/person/' + personId);
+  return data;
 }

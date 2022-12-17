@@ -7,6 +7,7 @@ import Balance from '../pages/Balance';
 import Info from '../pages/Info';
 import Article from '../pages/Article';
 import AdminPanel from '../pages/Admin';
+import OtherProfile from '../pages/OtherProfie';
 
 export const publicRoutes = [
   {
@@ -51,5 +52,16 @@ export const authRoutes = [
   {
     path: ADMIN_PATH,
     Component: AdminPanel
+  },  
+]
+
+export const adminRoutes = [
+  {
+    path: ADMIN_PATH,
+    Component: AdminPanel
+  },  
+  {
+    path: PROFILE_PATH + '/:id',
+    Component: OtherProfile
   },  
 ]

@@ -3,11 +3,17 @@ import { Col, Container, Row, FormControl, Button } from 'react-bootstrap';
 import standardPicture from '../img/standard.jpg';
 import { Context } from '../index';
 import { ReactComponent as Cross } from '../img/cross.svg';
-import { createComment, deleteComment, getComments } from '../http/commentAPI';
+
+import { createComment, deleteComment, editComment, getComments } from '../http/commentAPI';
 import { getNotifications } from '../http/notififcationAPI';
+import { useParams } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { PROFILE_PATH } from '../utils/paths';
+import { ReactComponent as Info } from '../img/info.svg';
+import { editArticleText } from '../http/descriptionAPI';
 
 
-function CommentItem({ comment, isBlue, onDelete }) {
+function CommentItem({ comment, isBlue, onDelete, edit }) {
   const { userInfo } = useContext(Context);
   const user = userInfo.user;
 
@@ -17,7 +23,7 @@ function CommentItem({ comment, isBlue, onDelete }) {
   if (author.role === 'user') {
     role = '';
   }
-  if (author.isVip) {
+  if (author.role === 'user' && author.isVip) {
     role = 'VIP';
   }
   let picture = standardPicture;
@@ -43,42 +49,91 @@ function CommentItem({ comment, isBlue, onDelete }) {
             {
               (user.role === 'moderator' ||
                 user.role === 'administrator') &&
-              <button className='svg close-menu ms-3' onClick={onDelete}>
+              <button className='svg ms-3' onClick={onDelete}>
                 <Cross />
               </button>
             }
+            {
+              user.role === 'administrator' &&
+              <NavLink className='svg ms-3' to={PROFILE_PATH + '/' + author.id}>
+                <Info />
+              </NavLink>
+            }
           </Col>
         </Row>
-        <Row>
-          {comment.text}
-        </Row>
+        {
+          user.role !== 'moderator' &&
+          user.role !== 'administrator' &&
+          <Row>
+            {comment.text}
+          </Row>
+        }
+        {
+          (user.role === 'moderator' ||
+            user.role === 'administrator') &&
+          <Row onClick={() => edit(comment.id)}>
+            {comment.text}
+          </Row>
+        }
       </Container>
     </div>
   )
 }
 
 
-export default function CommentBlock() {
+export default function CommentBlock( {changeParagraph, onSuccess }) {
   const { stockInfo, notificationInfo } = useContext(Context);
   const stock = stockInfo.currentStock;
   const [comment, setComment] = useState('');
   const [commentList, setCommentList] = useState([]);
+  const [editId, setEditId] = useState(null);
+  const params = useParams();
+  let sectionId = +params.id;
+  if (!sectionId) {
+    sectionId = stock.sectionId;
+  }
 
   useEffect(() => {
     getComments().then(
       comments => setCommentList(
-        comments.filter(comment => comment.sectionId === stock.sectionId).sort((a, b) => b.date - a.date)
+        comments.filter(comment => comment.sectionId === sectionId)
+          .sort((a, b) => b.date - a.date)
+          .sort((a, b) => +b.author.isVip - +a.author.isVip)
       )
     ).catch(() => { });
-  }, [stock]);
+  }, [stock, sectionId]);
+  useEffect(() => {
+    if (changeParagraph) {
+      setComment(changeParagraph.text);
+    }
+  }, [changeParagraph]);
 
   function addComment() {
-    createComment(comment, stock.sectionId).then(
+    if (changeParagraph) {
+      changeArticleParagraph();
+      return;
+    }
+    if (editId != null) {
+      editComment(editId, comment).then(() => {
+        const initial = commentList.find(comment => comment.id === editId);
+        const other = commentList.filter(comment => comment.id !== editId);
+        setCommentList([{ ...initial, text: comment }, ...other]);
+        setComment('');
+        setEditId(null);
+      }).catch(() => { });
+      return;
+    }
+    createComment(comment, sectionId).then(
       comment => {
         setCommentList([comment, ...commentList]);
         setComment('');
       }
-    ).catch(() => { })
+    ).catch(() => { });
+  }
+
+  function edit(id) {
+    setEditId(id);
+    setComment(commentList.find(comment => comment.id === id).text);
   }
 
   function removeComment(id) {
@@ -87,6 +142,12 @@ export default function CommentBlock() {
       getNotifications().then(notifications =>
         notificationInfo.notifications = notifications
       ).catch(() => { });
+    }).catch(() => { });
+  }
+  function changeArticleParagraph() {
+    editArticleText(changeParagraph.id, comment).then(() => {
+      onSuccess(comment);
+      setComment('');
     }).catch(() => { });
   }
 
@@ -107,6 +168,7 @@ export default function CommentBlock() {
             key={comment.id}
             isBlue={index % 2}
             onDelete={() => removeComment(comment.id)}
+            edit={edit}
           />
         })
       }

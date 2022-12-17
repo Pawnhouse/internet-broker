@@ -110,12 +110,29 @@ button {
   top: 0px;
   right: 50px;
   width: 90px;
-  display: flex;
+  display: none;
   justify-content: space-between;
   background-color: white;
   padding: 0.5rem;
   border-radius: 0 0 5px 5px;
   z-index: 1;
+}
+
+header {
+  background-color: white;
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  justify-items: center;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0 0 10px 10px;
+  border:#312e2b 1px solid;
+  border-top: none;
+  z-index: 1;
+  left: 50%;
+  transform: translate(-50%);
 }
 
 .page-heading {
@@ -134,14 +151,40 @@ button {
   background-color: white;
   border-radius: 15px;
   min-height: 85vh;
+  background-position: bottom right;
+  background-repeat: no-repeat;
 }
 
 .main-container {
   background-color: #312e2b;
   min-height: 100%;
-  padding: 3rem;
+  padding: 3rem 1rem;
+  padding-top: 5rem;
 }
 
 .first-letter-margin::first-letter {
   margin-left: 1.5rem;
+}
+
+.background-image{
+  background-position: bottom right;
+}
+
+@media (max-width: 600px) {
+  .desktop {
+    display: none;
+  }
+
+  .top-buttons {
+    display: flex;
+  }
+
+  .main-container {
+    padding-top: 3rem;
+  }
+}
+
+.error-not-found {
+  position: relative;
+  top: 60px;
 }

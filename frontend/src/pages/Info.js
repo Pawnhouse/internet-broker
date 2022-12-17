@@ -30,7 +30,7 @@ function Info() {
     }
   }
   if (!current || !isLoaded) {
-    return <div className='blur'>404 error</div>
+    return <div className='blur error-not-found'>404 error</div>
   }
   stockInfo.currentStock = current;
   const name = current.sharesName || current.code;

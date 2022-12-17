@@ -9,7 +9,7 @@ import RequestList from '../components/RequestList';
 import StockList from '../components/StockList';
 import { getShares, getStock } from '../http/stockAPI';
 import { Context } from '../index'
-
+import adminBg from '../img/admin-bg.png';
 
 
 function AdminPanel() {
@@ -17,12 +17,23 @@ function AdminPanel() {
   const [shareVisible, setShareVisible] = useState(false);
   const [suspendNavValue, setSuspendNavValue] = useState('stock');
   const [restoreNavValue, setRestoreNavValue] = useState('stock');
+  const [tabValue, setTabValue] = useState('add');
+  const [backgroundImage, setBackgroundImage] = useState();
 
   const { stockInfo } = useContext(Context);
   useEffect(() => {
     getStock().then(stock => stockInfo.allStock = stock).catch(() => { });
     getShares().then(shares => stockInfo.allShares = shares).catch(() => { });
   }, [stockInfo]);
+  useEffect(() => {
+    if (window.innerHeight > 800 && window.innerWidth > 1000 
+      && (tabValue === 'add') ) {
+      setBackgroundImage(`url(${adminBg})`);
+    } else {
+      setBackgroundImage(null);
+    }
+    }, [tabValue, backgroundImage]);
+
   const stockNav = (navValue, setNavValue) =>  (
     <Nav
       variant='pills' 
@@ -40,11 +51,12 @@ function AdminPanel() {
   )
 
   return (
-    <MainContainer pageName='Admin panel'>
+    <MainContainer pageName='Admin panel' backgroundImage={backgroundImage}>
       <Tabs
-        defaultActiveKey='add'
+        activeKey={tabValue}
         id='uncontrolled-tab-example'
         className='mb-3'
+        onSelect={(selectedKey) => setTabValue(selectedKey)}
       >
         <Tab eventKey='add' title='Add'>
           <Button onClick={() => setStockVisible(true)} className='me-3'>Add stock</Button>

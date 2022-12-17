@@ -3,6 +3,7 @@ import { Row, Col, Button } from 'react-bootstrap';
 import { Context } from '../index';
 import { buyStock, getStockCandles, getStockNumber, sellStock } from '../http/stockAPI';
 import { getBalance } from '../http/userAPI';
+import Select from 'react-select';
 
 import MainContainer from '../components/main/MainContainer';
 import ArticleAside from '../components/ArticleAside';
@@ -57,10 +58,10 @@ function Panel() {
   }, [userInfo.user]);
 
   if (isLoading && !stock) {
-    return <div className='blur'></div>
+    return <div className='blur error-not-found'></div>
   }
   if (!stock) {
-    return <div className='blur'>No stock available</div>
+    return <div className='blur error-not-found'>No stock available</div>
   }
 
   const pageName = stock.code ?? stock.sharesName;
@@ -68,6 +69,13 @@ function Panel() {
   if (userInfo.user.picture) {
     picture = process.env.REACT_APP_API_URL + '/' + userInfo.user.picture;
   }
+  const allActive = stockInfo.allStock
+    .concat(stockInfo.allShares)
+    .filter(item => item.isActive);
+  const names = allActive.map(item => ({
+      value: item.sectionId, 
+      label: item.code || item.sharesName
+    }));
 
   function buttonAction(action) {
     return () => {
@@ -81,13 +89,32 @@ function Panel() {
     }
   }
 
+  function changeStock({value}) { 
+    const stock = allActive.find(stock => stock.sectionId === value);
+    stockInfo.currentStock = stock;
+    setStock(stock);
+  }
   return (
     <MainContainer pageName={pageName}>
       <Row className='d-flex justify-content-between'>
         <Col md={8} style={{ border: '1.5px solid gray', borderRadius: 10, height: 500 }}>
           <Chart candles={candles} />
         </Col>
-        <Col md={3}><ArticleAside /></Col>
+        <Col md={3} className='d-flex flex-column justify-content-between'>
+          <Select
+            styles={{
+              control: (baseStyles) => ({
+                ...baseStyles,
+                borderColor: 'gray',
+              }),
+            }}
+            defaultValue={names.find(name => name.value === stock.sectionId)}
+            isSearchable={true}
+            options={names}
+            onChange={changeStock}
+          />
+          <ArticleAside />
+        </Col>
       </Row>
 
       <Row className='my-3'>

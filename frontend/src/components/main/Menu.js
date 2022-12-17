@@ -4,7 +4,7 @@ import { Context } from '../../index';
 import { ReactComponent as Cross } from '../../img/cross.svg';
 import standardPicture from '../../img/standard.jpg';
 import { observer } from 'mobx-react-lite';
-import { ADMIN_PATH, DEPOSIT_PATH, PANEL_PATH, PROFILE_PATH, STOCK_PATH, WITHDRAWAL_PATH } from '../../utils/paths';
+import { ADMIN_PATH, DEPOSIT_PATH, PANEL_PATH, PROFILE_PATH, STOCK_PATH } from '../../utils/paths';
 
 
 function Menu(props) {
@@ -29,7 +29,7 @@ function Menu(props) {
   return (
     <div className='menu'>
       <div className='right'>
-        <button className='svg close-menu' onClick={props.onRequestClose}><Cross /></button>
+        <button className='svg' onClick={props.onRequestClose}><Cross /></button>
       </div>
       <div className='profile'>
         <MyNavLink to={PROFILE_PATH}>{name}</MyNavLink>
@@ -46,8 +46,7 @@ function Menu(props) {
         {
           user.role === 'user' &&
           <>
-            <MyNavLink to={WITHDRAWAL_PATH}>Withdraw money</MyNavLink>
-            <MyNavLink to={DEPOSIT_PATH}>Make a deposite</MyNavLink>
+            <MyNavLink to={DEPOSIT_PATH}>Balance</MyNavLink>
           </>
         }
         <MyNavLink to={STOCK_PATH} >Markets</MyNavLink>

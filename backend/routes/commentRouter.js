@@ -6,6 +6,7 @@ const roleOrPersonal = require('../middleware/roleOrPersonal');
 
 router.get('/', authMiddleware, commentController.get);
 router.post('/create', authMiddleware, commentController.create);
+router.post('/edit', authMiddleware, commentController.edit);
 router.delete(
   '/:id',
   authMiddleware,

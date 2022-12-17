@@ -41,6 +41,7 @@ function Profile() {
   }
 
   const [email, setEmail] = useState(user.email);
+  const [phone, setPhone] = useState(user.phone ?? '');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const [firstName, setFirstName] = useState(user.firstName);
@@ -48,13 +49,17 @@ function Profile() {
   const [surname, setSurname] = useState(user.surname);
 
   const [file, setFile] = useState(null);
-  const [role, setRole] = useState(user.role);
+  let actualRole = user.role;
+  if (actualRole === 'user' && user.isVip) {
+    actualRole = 'vip';
+  }
+  const [role, setRole] = useState(actualRole);
   const [canRequest, setCanRequest] = useState(false);
   const [company, setCompany] = useState('');
 
-  const initialValues = [user.email, '', '', user.firstName, user.middleName, user.surname];
-  const values = [email, password, password2, firstName, middleName, surname];
-  const setters = [setEmail, setPassword, setPassword2, setFirstName, setMiddleName, setSurname];
+  const initialValues = [user.email, '', '', user.firstName, user.middleName, user.surname, user.phone ?? ''];
+  const values = [email, password, password2, firstName, middleName, surname, phone];
+  const setters = [setEmail, setPassword, setPassword2, setFirstName, setMiddleName, setSurname, setPhone];
 
   useEffect(() => {
     if (user.role !== 'administrator') {
@@ -94,9 +99,8 @@ function Profile() {
       if (values[1] !== '') {
         newUser.password = values[1];
       }
-      [newUser.firstName, newUser.middleName, newUser.surname] = values.slice(3);
-      await updateUser(newUser);
-      Object.keys(newUser).forEach(key => user[key] = newUser[key]);
+      [newUser.firstName, newUser.middleName, newUser.surname, newUser.phone] = values.slice(3);
+      userInfo.user = await updateUser(newUser);
     }
 
   }
@@ -135,7 +139,7 @@ function Profile() {
     }
 
     try {
-      if (role !== user.role) {
+      if (role !== actualRole) {
         await createRequest(user.id, role);
         message = 'Request sended.';
         setRole(user.role);
@@ -199,7 +203,7 @@ function Profile() {
             }
           </Col>
           <Col>
-            <LabelsGroup labelArray={[0, 1, 2]} values={values} setters={setters} />
+            <LabelsGroup labelArray={[0, 1, 2, 6]} values={values} setters={setters} />
           </Col>
         </Row>
 

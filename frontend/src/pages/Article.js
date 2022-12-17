@@ -1,32 +1,36 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Context } from '../index';
 import { observer } from 'mobx-react-lite';
 import { Container, Row, Col, Button } from 'react-bootstrap';
+
 import MainContainer from '../components/main/MainContainer';
 import { PANEL_PATH, STOCK_PATH } from '../utils/paths';
 import stockLoad from '../utils/stockLoad';
-import { getArticles } from '../http/descriptionAPI';
+import { deleteArticle, getArticles } from '../http/descriptionAPI';
 import standardPicture from '../img/standard.jpg';
+import CommentBlock from '../components/CommentBlock';
+import { ReactComponent as Cross } from '../img/cross.svg';
 
 
 function Article() {
-  const { articleInfo, stockInfo } = useContext(Context);
+  const { articleInfo, stockInfo, userInfo } = useContext(Context);
+  const [changeParagraph, setChangeParagraph] = useState(null);
+
   useEffect(() => {
     stockLoad(stockInfo);
+  }, [stockInfo]);
+  useEffect(() => {
     getArticles().then(articles => {
       articleInfo.allArticles = articles;
-      if (!articleInfo.currentArticle) {
-        articleInfo.currentArticle = articleInfo.allArticles[0];
-      }
     }).catch(() => { });
-  }, [articleInfo, stockInfo]);
+  }, [articleInfo]);
   const navigate = useNavigate();
   const params = useParams();
 
   let article = articleInfo.allArticles.find(article => article.sectionId === +params.id);
-  if (!article) {
-    return <div className='blur'>404 article not found</div>
+  if (!article ) {
+    return <div className='blur error-not-found'>404 article not found</div>
   }
 
   let label = 'World Market';
@@ -59,7 +63,25 @@ function Article() {
   if (article.author.picture) {
     picture = process.env.REACT_APP_API_URL + '/' + article.author.picture;
   }
-  const paragraphs = article.text.split('\n').map((p, id) => ({text: p, id})); 
+
+  function onDelete() {
+    deleteArticle(article.sectionId).then(() => {
+      articleInfo.allArticles = articleInfo.allArticles.filter(a => a.sectionId !== article.sectionId);
+    }).catch(() => { });
+  }
+
+  function onChange(id) {
+    setChangeParagraph({ id, text: article.content.find(p => p.id === id).text });
+  }
+  function onSuccessChange(newText) { 
+    const oldParagraph = article.content.find(p => p.id === changeParagraph.id);
+    const newParagraph = {...oldParagraph, text: newText};
+    const oldList = article.content.filter(p => p.id !== changeParagraph.id)
+    const newContent = [...oldList, newParagraph];
+    const newArticle = {...article, content: newContent}; 
+    articleInfo.allArticles = [...articleInfo.allArticles.filter(a => a.sectionId !== article.sectionId), newArticle];
+    setChangeParagraph(null);
+  }
   return (
     <MainContainer pageName={article.headline}>
       <div className='w-100 p-3 d-flex'>
@@ -77,20 +99,47 @@ function Article() {
             </div>
             <Col>
               {article.date.toLocaleDateString()}
+              {
+                (userInfo.user.role === 'moderator' ||
+                  userInfo.user.role === 'administrator') &&
+                <button className='svg ms-3' onClick={onDelete}>
+                  <Cross />
+                </button>
+              }
             </Col>
           </Row>
         </Container>
       </div>
       <Row>
-      {
-          paragraphs.map((p) => (
-            <div className='first-letter-margin' key={p.id}>
-              {p.text}
-              <br />
+        {
+          article.content.map((p) => (
+            <div key={p.id}>
+              {
+                !!p.text &&
+                  (userInfo.user.role === 'moderator' ||
+                    userInfo.user.role === 'administrator') ?
+                  <div className='first-letter-margin' onClick={() => onChange(p.id)}>
+                    {p.text}
+                    {
+                      p.picture &&
+                      <img src={process.env.REACT_APP_API_URL + '/' + p.picture} alt='article pic' style={{ margin: '5px auto', display: 'block' }} />
+                    }
+                    <br />
+                  </div> :
+                  <div className='first-letter-margin'>
+                    {p.text}
+                    {
+                      p.picture &&
+                      <img src={process.env.REACT_APP_API_URL + '/' + p.picture} alt='article pic' style={{ margin: '5px auto', display: 'block' }} />
+                    }
+                    <br />
+                  </div>
+              }
             </div>
           ))
         }
       </Row>
+      <CommentBlock changeParagraph={changeParagraph} onSuccess={onSuccessChange} />
     </MainContainer>
   )
 }
