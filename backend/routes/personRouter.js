@@ -16,9 +16,8 @@ router.post('/register', personController.register);
 router.post('/deposit', authMiddleware, personController.deposit);
 router.post('/withdrawal', authMiddleware, personController.withdrawal);
 
-router.post('/', personController.updateUser);
 router.post('/company', authMiddleware, personController.setCompany);
-router.patch('/', roleOrPersonal(['administrator']), personController.updateUser);
+router.patch('/', authMiddleware, personController.updateUser);
 router.patch('/picture', personController.addPicture);
 
 module.exports = router

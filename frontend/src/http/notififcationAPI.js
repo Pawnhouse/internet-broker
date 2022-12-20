@@ -18,6 +18,10 @@ export async function getNotifications() {
   return data;
 }
 
+export function send(text, userId) {
+  return $authHost.post('/api/request/notification', {text, userId});
+}
+
 export async function createRequest(
   personId, role, date = new Date().toISOString().slice(0, 19).replace('T', ' ')
 ) {

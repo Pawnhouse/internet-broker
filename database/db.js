@@ -134,6 +134,7 @@ class DB {
     if (user.picture != undefined) {
       user.picture = (await this.getDataById('picture', user.picture)).file;
     }
+    user.role = (await this.getDataById('role', user.role)).name;
     return user;
   }
 

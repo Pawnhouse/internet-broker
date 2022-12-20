@@ -35,6 +35,7 @@ function OtherProfile() {
   const personId = +params.id;
 
   const [user, setUser] = useState({});
+  const [isLoaded, setIsLoaded] = useState(false);
   let picture = standardPicture;
   if (user.picture) {
     picture = process.env.REACT_APP_API_URL + '/' + user.picture;
@@ -48,9 +49,12 @@ function OtherProfile() {
   const initialValues = [user.email, '', '', user.firstName, user.middleName, user.surname];
 
   useEffect(() => {
-    getUser(personId).then((user) => setUser(user));
+    getUser(personId).then((user) => {setUser(user); setIsLoaded(true)}).catch(() => { });
   }, [personId]);
 
+  if (!isLoaded) {
+    return <MainContainer/>
+  }
   if (!user.id) {
     return <div className='blur error-not-found'>404 user not found</div>
   }

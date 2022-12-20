@@ -9,7 +9,7 @@ import '../css/profile.css';
 import MainContainer from '../components/main/MainContainer';
 import { createRequest, getPersonRequests } from '../http/notififcationAPI';
 import { hideMessage, showError, showResult } from '../utils/formMessage';
-import { check, getCompany, newPicture, updateCompany, updateUser } from '../http/userAPI';
+import { check, getCompany, getIsVip, newPicture, updateCompany, updateUser } from '../http/userAPI';
 
 
 function LabelsGroup({ labelArray, values, setters }) {
@@ -49,11 +49,8 @@ function Profile() {
   const [surname, setSurname] = useState(user.surname);
 
   const [file, setFile] = useState(null);
-  let actualRole = user.role;
-  if (actualRole === 'user' && user.isVip) {
-    actualRole = 'vip';
-  }
-  const [role, setRole] = useState(actualRole);
+  const [role, setRole] = useState(user.role);
+  const [initialRole, setInitialRole] = useState(user.role);
   const [canRequest, setCanRequest] = useState(false);
   const [company, setCompany] = useState('');
 
@@ -71,6 +68,14 @@ function Profile() {
     }
     if (user.role === 'analyst') {
       getCompany().then(company => setCompany(company ?? '')).catch(() => { });
+    }
+    if (user.role === 'user') {
+      getIsVip().then(isVip => {
+        if (isVip) {
+          setRole('vip');
+          setInitialRole('vip');
+        }
+      }).catch(() => { });
     }
   }, [user]);
 
@@ -139,7 +144,7 @@ function Profile() {
     }
 
     try {
-      if (role !== actualRole) {
+      if (role !== initialRole) {
         await createRequest(user.id, role);
         message = 'Request sended.';
         setRole(user.role);

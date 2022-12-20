@@ -3,18 +3,19 @@ import { Col, Container, Row, FormControl, Button } from 'react-bootstrap';
 import standardPicture from '../img/standard.jpg';
 import { Context } from '../index';
 import { ReactComponent as Cross } from '../img/cross.svg';
+import { ReactComponent as Edit } from '../img/edit.svg';
+import { ReactComponent as Message } from '../img/message.svg';
 
 import { createComment, deleteComment, editComment, getComments } from '../http/commentAPI';
 import { getNotifications } from '../http/notififcationAPI';
-import { useParams } from 'react-router-dom';
-import { NavLink } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { PROFILE_PATH } from '../utils/paths';
-import { ReactComponent as Info } from '../img/info.svg';
 import { editArticleText } from '../http/descriptionAPI';
+import SendNotification from './modals/SendNotification';
 
-
-function CommentItem({ comment, isBlue, onDelete, edit }) {
+function CommentItem({ comment, isBlue, onDelete, edit, setSend }) {
   const { userInfo } = useContext(Context);
+  const navigate = useNavigate();
   const user = userInfo.user;
 
   const author = comment.author;
@@ -35,58 +36,55 @@ function CommentItem({ comment, isBlue, onDelete, edit }) {
     <div className='w-100 p-3 d-flex' style={{ background: isBlue ? '#edf4f6' : 'white' }}>
       <img src={picture} width={120} height={120} alt='Profile pic' />
       <Container className='ms-3'>
-        <Row className='justify-content-evenly'>
-          <div className='w-75'>
+        <div className='d-flex justify-content-between'>
+          <div className=''>
             <div style={{ minWidth: 150, display: 'inline-block', textAlign: 'left' }}>
-              <b>{name}</b>
+              {
+                user.role === 'administrator' ?
+                  <b onClick={() => navigate(PROFILE_PATH + '/' + author.id)}>{name}</b>
+                  :
+                  <b>{name}</b>
+              }
             </div>
             <span style={{ marginLeft: '10px' }}>
               {role}
             </span>
           </div>
-          <Col>
+          <div>
             {comment.date.toLocaleDateString()}
             {
               (user.role === 'moderator' ||
                 user.role === 'administrator') &&
-              <button className='svg ms-3' onClick={onDelete}>
-                <Cross />
-              </button>
+              <>
+                <button className='svg ms-3' onClick={() => setSend({ show: true, userId: author.id })}>
+                  <Message />
+                </button>
+                <button className='svg ms-3' onClick={() => edit(comment.id)}>
+                  <Edit />
+                </button>
+                <button className='svg ms-3' onClick={onDelete}>
+                  <Cross />
+                </button>
+              </>
             }
-            {
-              user.role === 'administrator' &&
-              <NavLink className='svg ms-3' to={PROFILE_PATH + '/' + author.id}>
-                <Info />
-              </NavLink>
-            }
-          </Col>
+          </div>
+        </div>
+        <Row>
+          {comment.text}
         </Row>
-        {
-          user.role !== 'moderator' &&
-          user.role !== 'administrator' &&
-          <Row>
-            {comment.text}
-          </Row>
-        }
-        {
-          (user.role === 'moderator' ||
-            user.role === 'administrator') &&
-          <Row onClick={() => edit(comment.id)}>
-            {comment.text}
-          </Row>
-        }
       </Container>
     </div>
   )
 }
 
 
-export default function CommentBlock( {changeParagraph, onSuccess }) {
+export default function CommentBlock({ changeParagraph, onSuccess }) {
   const { stockInfo, notificationInfo } = useContext(Context);
   const stock = stockInfo.currentStock;
   const [comment, setComment] = useState('');
   const [commentList, setCommentList] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [send, setSend] = useState({ show: false, userId: null });
   const params = useParams();
   let sectionId = +params.id;
   if (!sectionId) {
@@ -132,8 +130,13 @@ export default function CommentBlock( {changeParagraph, onSuccess }) {
   }
 
   function edit(id) {
-    setEditId(id);
-    setComment(commentList.find(comment => comment.id === id).text);
+    if (editId !== id) {
+      setEditId(id);
+      setComment(commentList.find(comment => comment.id === id).text);
+    } else {
+      setEditId(null);
+      setComment('');
+    }
   }
 
   function removeComment(id) {
@@ -144,6 +147,7 @@ export default function CommentBlock( {changeParagraph, onSuccess }) {
       ).catch(() => { });
     }).catch(() => { });
   }
+
   function changeArticleParagraph() {
     editArticleText(changeParagraph.id, comment).then(() => {
       onSuccess(comment);
@@ -168,10 +172,16 @@ export default function CommentBlock( {changeParagraph, onSuccess }) {
             key={comment.id}
             isBlue={index % 2}
             onDelete={() => removeComment(comment.id)}
+            setSend={setSend}
             edit={edit}
           />
         })
       }
+      <SendNotification
+        show={send.show}
+        userId={send.userId}
+        onHide={() => setSend({ show: false })}
+      />
     </>
   )
 }

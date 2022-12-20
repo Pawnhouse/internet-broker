@@ -26,12 +26,12 @@ function ArticleAside() {
     article => !article.isClosed || userInfo.user.role !== 'user' || isVip
   ).slice(0, 5);
   return (
-    <Container style={{ border: '1.5px solid gray', height: '80%', borderRadius: 5 }}>
+    <Container style={{ border: '1.5px solid gray', height: '80%', borderRadius: 5, overflow: 'hidden' }}>
       {
         stockArticles.map((element) => (
           <Row key={element.sectionId}>
             <NavLink
-              className="simple-link"
+              className="simple-link mb-2"
               to={ARTICLE_PATH + '/' + element.sectionId}
             >
               {element.headline}

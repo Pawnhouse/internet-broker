@@ -29,11 +29,11 @@ function Article() {
   const params = useParams();
 
   let article = articleInfo.allArticles.find(article => article.sectionId === +params.id);
-  if (!article ) {
+  if (!article) {
     return <div className='blur error-not-found'>404 article not found</div>
   }
 
-  let label = 'World Market';
+  let labels = ['World Market'];
   let route = STOCK_PATH;
   let relatedSection;
   if (stockInfo.isLoaded) {
@@ -45,13 +45,10 @@ function Article() {
   }
   if (relatedSection != null) {
     route = PANEL_PATH;
-    if (relatedSection.isActive) {
-      stockInfo.currentStock = relatedSection;
-    }
     if (relatedSection.code != null) {
-      label = '$' + relatedSection.code;
+      labels = [relatedSection];
     } else {
-      label = relatedSection.name;
+      labels = stockInfo.allStock.filter(stock => relatedSection.stockList.find(({stockCode}) => stockCode === stock.code)).slice(0, 3);
     }
   }
 
@@ -64,6 +61,13 @@ function Article() {
     picture = process.env.REACT_APP_API_URL + '/' + article.author.picture;
   }
 
+  function onRelatedClick(stock) {
+    if (stock?.isActive) {
+      stockInfo.currentStock = stock;
+    }
+    navigate(route);
+  }
+
   function onDelete() {
     deleteArticle(article.sectionId).then(() => {
       articleInfo.allArticles = articleInfo.allArticles.filter(a => a.sectionId !== article.sectionId);
@@ -73,12 +77,12 @@ function Article() {
   function onChange(id) {
     setChangeParagraph({ id, text: article.content.find(p => p.id === id).text });
   }
-  function onSuccessChange(newText) { 
+  function onSuccessChange(newText) {
     const oldParagraph = article.content.find(p => p.id === changeParagraph.id);
-    const newParagraph = {...oldParagraph, text: newText};
+    const newParagraph = { ...oldParagraph, text: newText };
     const oldList = article.content.filter(p => p.id !== changeParagraph.id)
     const newContent = [...oldList, newParagraph];
-    const newArticle = {...article, content: newContent}; 
+    const newArticle = { ...article, content: newContent };
     articleInfo.allArticles = [...articleInfo.allArticles.filter(a => a.sectionId !== article.sectionId), newArticle];
     setChangeParagraph(null);
   }
@@ -95,7 +99,16 @@ function Article() {
                   {second}
                 </span>
               </div>
-              <Button variant='secondary' onClick={() => navigate(route)} className='rounded-button'>{label}</Button>
+              <div>
+                {
+                  labels.map(label => (
+                    <Button variant='secondary' onClick={() => onRelatedClick(label)} className='rounded-button ms-3'>
+                      {label.code ? '$' + label.code : 'World Market'}
+                    </Button>
+                  ))
+                }
+
+              </div>
             </div>
             <Col>
               {article.date.toLocaleDateString()}
@@ -122,7 +135,7 @@ function Article() {
                     {p.text}
                     {
                       p.picture &&
-                      <img src={process.env.REACT_APP_API_URL + '/' + p.picture} alt='article pic' style={{ margin: '5px auto', display: 'block' }} />
+                      <img src={process.env.REACT_APP_API_URL + '/' + p.picture} alt='article pic' style={{ margin: '5px auto', display: 'block', maxWidth: '90%' }} />
                     }
                     <br />
                   </div> :
@@ -130,7 +143,7 @@ function Article() {
                     {p.text}
                     {
                       p.picture &&
-                      <img src={process.env.REACT_APP_API_URL + '/' + p.picture} alt='article pic' style={{ margin: '5px auto', display: 'block' }} />
+                      <img src={process.env.REACT_APP_API_URL + '/' + p.picture} alt='article pic' style={{ margin: '5px auto', display: 'block', maxWidth: '90%' }} />
                     }
                     <br />
                   </div>

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Button, Form, Modal } from "react-bootstrap"
 import { writeArticle, addPicture } from "../../http/descriptionAPI";
 import { Context } from '../../index';
@@ -9,10 +9,14 @@ function AddArticle({ show, onHide, sectionId }) {
   const [headline, setHeadlne] = useState('');
   const [text, setText] = useState('');
   const [closed, setClosed] = useState(false);
-  const [about, setAbout] = useState(stockInfo.currentStock.code || stockInfo.currentStock.sharesName);
+  const [about, setAbout] = useState('');
   const [file, setFile] = useState('');
   const [theInputKey, setTheInputKey] = useState('');
   const [currentArticle, setCurrentArticle] = useState();
+
+  useEffect(() => {
+    setAbout(stockInfo.currentStock.code || stockInfo.currentStock.sharesName);
+  }, [stockInfo.currentStock]);
 
   function add() {
     let aboutId = sectionId;

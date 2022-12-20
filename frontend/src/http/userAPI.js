@@ -35,13 +35,13 @@ export async function check() {
 }
 
 export async function updateUser(user) {
-  const { data } = await $authHost.post('/api/person/', user);
+  const { data } = await $authHost.patch('/api/person/', user);
   localStorage.setItem('token', data);
   return jwt_decode(data);
 }
 
 export function updateRole(id, role) {
-  return $authHost.post('/api/person/', {id, role});
+  return $authHost.patch('/api/person/', {id, role});
 }
 
 export async function newPicture(formData) {

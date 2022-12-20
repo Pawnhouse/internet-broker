@@ -11,7 +11,7 @@ function generateJwt({ id, role, email, firstName, middleName, surname, picture,
   return jwt.sign({ id, role, email, firstName, middleName, surname, picture, phone }, 'key432', { expiresIn: '1h' });
 }
 
-const escapeList = ['a@a.a', 'b@b.b', 'mail@blackrock.us', 'ibayak@gmail.com', 'vip@mail.com'];
+const escapeList = ['a@a.a', 'b@b.b', 'mail@blackrock.us', 'vip@mail.com'];
 
 class PersonController {
 
@@ -33,16 +33,17 @@ class PersonController {
     }
 
     const oneTimePassword = Math.floor(Math.random() * 999999);
-    await db.deleteData('oneTimePassword', { email });
+    await db.deleteData('oneTimePassword', { personId: person.id });
     await db.insertData('oneTimePassword', {
-      email,
+      personId: person.id,
       value: oneTimePassword,
       time: new Date().toISOString().slice(0, 19).replace('T', ' ')
     });
     if (escapeList.includes(email)) {
       console.log(oneTimePassword);
     } else {
-      await mail(oneTimePassword, email);
+      const text = 'Your one-time password is:\n' + oneTimePassword;
+      await mail(text, email);
     }
     res.status(200).send();
   }
@@ -54,7 +55,8 @@ class PersonController {
       return;
     }
 
-    const result = await db.getConditionData('oneTimePassword', { email });
+    const person = await db.findByEmail(email);
+    const result = await db.getConditionData('oneTimePassword', { personId: person.id });
     if (result.length === 0) {
       next(ApiError.badRequest('Error your one-time password expired. Try login again.'));
       return;
@@ -64,8 +66,8 @@ class PersonController {
       return;
     }
 
-    await db.deleteData('oneTimePassword', { email });
-    const token = generateJwt(await db.findByEmail(email));
+    await db.deleteData('oneTimePassword', { personId: person.id });
+    const token = generateJwt(person);
     res.json(token);
   }
 
@@ -80,7 +82,7 @@ class PersonController {
       next(ApiError.badRequest('Password must be at least 8 characters'));
       return;
     }
-    if (password.search(/[a-zA-Z]/) === -1 || password.search(/\d/) === -1) { 
+    if (password.search(/[a-zA-Z]/) === -1 || password.search(/\d/) === -1) {
       next(ApiError.badRequest('Password must contain letter and number'));
       return;
     }
@@ -94,7 +96,7 @@ class PersonController {
     const hash = bcrypt.hashSync(password, 12);
     const user = new Object(req.body);
     user.password = hash;
-    user.role = 'user';
+    user.role = 1;
     await db.insertData('person', user);
 
     const { id, role, middleName } = await db.findByEmail(email);
@@ -108,7 +110,7 @@ class PersonController {
     const { sum } = req.body;
     const checkout = await payment.getTokenAndUrl(
       Math.round(sum * 100), firstName, surname, email
-      );
+    );
     if (!checkout) {
       next(ApiError.internal('Sorry, some error has happend'));
       return;
@@ -140,19 +142,19 @@ class PersonController {
       await db.updateData('payment', { token: userPayment.token, status });
       await db.updateData('user', { personId: req.user.id, balance: balance + userPayment.amount, token: userPayment.token });
       const text = 'Your payment of ' + userPayment.amount + '$ was successfull';
-      await db.insertData('notification', { 
-        receiverId: req.user.id, 
-        text, 
-        date: new Date().toISOString().slice(0, 19).replace('T', ' ') 
+      await db.insertData('notification', {
+        receiverId: req.user.id,
+        text,
+        date: new Date().toISOString().slice(0, 19).replace('T', ' ')
       });
 
     } else if (status) {
       await db.updateData('payment', { token: userPayment.token, status });
       const text = 'Your payment of ' + userPayment.amount + '$ is failed';
-      await db.insertData('notification', { 
-        receiverId: req.user.id, 
+      await db.insertData('notification', {
+        receiverId: req.user.id,
         text,
-        date: new Date().toISOString().slice(0, 19).replace('T', ' ') 
+        date: new Date().toISOString().slice(0, 19).replace('T', ' ')
       });
     }
   }
@@ -165,21 +167,19 @@ class PersonController {
       next(ApiError.badRequest('Not enough balance to withdraw'));
       return;
     }
-    if ( !token ) {
+    if (!token) {
       next(ApiError.badRequest('You have never incresed balance with a card'));
       return;
     }
     await db.updateData('user', { personId: id, balance: balance - sum });
     res.status(200).send();
-    
-    const text = 'You withdraw ' + sum + '$';
-    await db.insertData('notification', { 
-      receiverId: id, 
-      text, 
-      date: new Date().toISOString().slice(0, 19).replace('T', ' ') 
-    });
 
-    
+    const text = 'You withdraw ' + sum + '$';
+    await db.insertData('notification', {
+      receiverId: id,
+      text,
+      date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+    });
   }
 
   async check(req, res, next) {
@@ -187,20 +187,22 @@ class PersonController {
     res.json(token);
   }
 
-  async getUser(req, res) { 
+  async getUser(req, res) {
     const id = req.params.id;
-    const userQuery = 'SELECT person.id, firstName, middleName, surname,' 
-    + ' email, role, isVip, company, file picture'
-    + ' FROM person'
-    + ' left JOIN user ON person.id = user.personId'
-    + ' left JOIN analyst ON person.id = analyst.personId'
-    + ' left JOIN picture ON picture = picture.id';
+    const userQuery = 'SELECT person.id, firstName, middleName, surname,'
+      + ' email, role.name role, isVip, company, file picture'
+      + ' FROM person'
+      + ' INNER JOIN role ON person.role = role.id'
+      + ' left JOIN user ON person.id = user.personId'
+      + ' left JOIN analyst ON person.id = analyst.personId'
+      + ' left JOIN picture ON picture = picture.id';
     if (id == null) {
-      res.json(await db.query(userQuery));
+      res.json(await db.getData('user_data'));
     } else {
-      res.json((await db.query(userQuery + ' WHERE person.id = ' + id))[0]);
+      res.json((await db.getConditionData('user_data', { id }))[0]);
     }
   }
+
   async updateUser(req, res, next) {
     const { email, password } = req.body;
     if (email) {
@@ -215,14 +217,26 @@ class PersonController {
         next(ApiError.badRequest('Password must be at least 8 characters'));
         return;
       }
-      if (password.search(/[a-zA-Z]/) === -1 || password.search(/\d/) === -1) { 
+      if (password.search(/[a-zA-Z]/) === -1 || password.search(/\d/) === -1) {
         next(ApiError.badRequest('Password must contain letter and number'));
         return;
       }
       req.body.password = bcrypt.hashSync(password, 12);
     }
+
+    if (req.body.role != null) {
+      req.body.role = (await db.getConditionData('role', { name: req.body.role }))[0].id;
+    }
+    if (req.body.role == 1) {
+      await db.updateData('user', { personId: req.body.id, isVip: false});
+    }
     await db.updateData('person', req.body);
+
     const user = await db.getDataById('person', req.body.id);
+    if (user.picture != undefined) {
+      user.picture = (await db.getDataById('picture', user.picture)).file;
+    }
+    user.role = (await db.getDataById('role', user.role)).name;
     const token = generateJwt(user);
     res.json(token);
   }
@@ -257,6 +271,7 @@ class PersonController {
       db.connection.query(query, async function (err, results) {
         if (err) {
           next(ApiError.internal('Database error'));
+          return;
         }
 
         const file = results.insertId + regex[0];
@@ -267,6 +282,7 @@ class PersonController {
         fs.copyFile(oldpath, newpath, function (err) {
           if (err) {
             next(ApiError.internal('File download error'));
+            return;
           }
           res.status(200).send();
         });

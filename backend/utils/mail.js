@@ -11,15 +11,14 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-module.exports = function send(oneTimePassword, email) {
-  const text = 'Your one-time password is:\n' + oneTimePassword;
+module.exports = function send(text, email, subject='Confirm login') {
   return transporter.sendMail({
     from: {
-      name: 'Authentication system',
+      name: 'Stocks',
       address: 'ibayak2@ya.ru'
     },
     to: email,
-    subject: 'Confirm login',
+    subject,
     text,
   });
 }

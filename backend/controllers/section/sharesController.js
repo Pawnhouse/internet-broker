@@ -126,7 +126,7 @@ class SharesController {
 
     await db.deleteData('sharesStock', { sharesName });
     if (!existingShares) {
-      const query = db.generateInsertQuery('section', { description, type: 'shares' });
+      const query = db.generateInsertQuery('section', { description, type: 2 });
       db.connection.query(query, async function (err, result) {
         if (err) throw err;
         await db.insertData(
@@ -143,7 +143,7 @@ class SharesController {
     } else {
       existingShares.isActive = obj.isActive;
       await db.updateData('shares', existingShares);
-      const section = { id: existingShares.sectionId, description, type: 'shares' };
+      const section = { id: existingShares.sectionId, description, type: 2 };
       await db.updateData('section', section);
       try {
         await db.insertManyRows('sharesStock', stockList.map((stockCode) => ({ stockCode, sharesName })));

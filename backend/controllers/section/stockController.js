@@ -99,7 +99,7 @@ class StockController {
     const existingStock = (await db.getConditionData('stock', { code }))[0];
 
     if (!existingStock) {
-      const query = db.generateInsertQuery('section', { description, type: 'stock' });
+      const query = db.generateInsertQuery('section', { description, type: 1 });
       db.connection.query(query, function (err, result) {
         if (err) throw err;
         db.insertData(
@@ -112,7 +112,7 @@ class StockController {
 
     existingStock.isActive = obj.isActive;
     await db.updatetData('stock', existingStock);
-    const section = { id: existingStock.sectionId, description, type: 'stock' };
+    const section = { id: existingStock.sectionId, description, type: 1 };
     await db.updatetData('section', section);
     res.status(200).send();
   }

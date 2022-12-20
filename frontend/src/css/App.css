@@ -170,6 +170,11 @@ header {
   background-position: bottom right;
 }
 
+.error-not-found {
+  position: relative;
+  top: 60px;
+}
+
 @media (max-width: 600px) {
   .desktop {
     display: none;
@@ -182,9 +187,4 @@ header {
   .main-container {
     padding-top: 3rem;
   }
-}
-
-.error-not-found {
-  position: relative;
-  top: 60px;
 }

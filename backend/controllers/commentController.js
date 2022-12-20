@@ -4,9 +4,10 @@ const db = require('../../database/db');
 class RequestController {
   async get(req, res) {
     let query = 'SELECT text, comment.id, CONCAT(firstName, " ", surname) name,'
-      + ' sectionId, role, isVip, date, person.id personId, file picture'
+      + ' sectionId, role.name role, isVip, date, person.id personId, file picture'
       + ' FROM comment'
       + ' INNER JOIN person ON person.id = authorId' 
+      + ' INNER JOIN role ON person.role = role.id' 
       + ' LEFT JOIN picture ON person.picture = picture.id'
       + ' LEFT JOIN user ON person.id = user.personId';
     const data = await db.query(query);
