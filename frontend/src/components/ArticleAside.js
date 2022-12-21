@@ -10,7 +10,9 @@ import { getIsVip } from '../http/userAPI';
 
 function ArticleAside() {
   const { articleInfo, stockInfo, userInfo } = useContext(Context);
+  const sectionId = stockInfo.currentStock?.sectionId;
   const [isVip, setIsVip] = useState();
+  const [isAll, setIsAll] = useState({ show: false, sectionId });
   useEffect(() => {
     getArticles().then(articles => {
       articleInfo.allArticles = articles;
@@ -18,15 +20,18 @@ function ArticleAside() {
     getIsVip().then(isVip => setIsVip(isVip)).catch(() => { });
   }, [articleInfo, userInfo.user]);
 
+  if (isAll.sectionId !== sectionId) {
+    setIsAll({ show: false, sectionId })
+  }
   const stockArticles = articleInfo.allArticles.filter(
-    article => article.about === stockInfo.currentStock?.sectionId
-  ).concat(articleInfo.allArticles.filter(
-    article => article.about == null
-  )).filter(
+    article => article.about === sectionId
+      || article.about == null
+      || isAll.show
+  ).filter(
     article => !article.isClosed || userInfo.user.role !== 'user' || isVip
   ).slice(0, 5);
   return (
-    <Container style={{ border: '1.5px solid gray', height: '80%', borderRadius: 5, overflow: 'hidden' }}>
+    <Container style={{ border: '1.5px solid gray', height: '80%', borderRadius: 5, overflowY: isAll.show ? 'scroll' : 'hidden' }}>
       {
         stockArticles.map((element) => (
           <Row key={element.sectionId}>
@@ -38,6 +43,10 @@ function ArticleAside() {
             </NavLink>
           </Row>
         ))
+      }
+      {
+        !isAll.show &&
+        <span onClick={() => setIsAll({ show: true, sectionId })} style={{ color: 'grey', cursor: 'pointer' }}>More...</span>
       }
     </Container>
   )

@@ -43,7 +43,7 @@ function Header() {
   return (
     <Container className='desktop' fluid='md' as='header' ref={ref}>
       <nav className='d-flex flex-row align-items-center'>
-        <img src='img/logo.png' alt='logo' height={40} className='mx-3'/>
+        <img src='/img/logo.png' alt='logo' height={40} className='mx-3'/>
         {
           user.role === 'administrator' &&
           <MyNavLink to={ADMIN_PATH}>Admin panel</MyNavLink>

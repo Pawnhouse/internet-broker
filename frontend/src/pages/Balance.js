@@ -21,8 +21,8 @@ function Balance() {
   const [sum, setSum] = useState('');
   const [backgroundImage, setBackgroundImage] = useState();
 
-  useEffect(() => { 
-    getBalance().then(balance => setBalance(balance)).catch(() => { console.error('balance not load')});
+  useEffect(() => {
+    getBalance().then(balance => setBalance(balance)).catch(() => { console.error('balance not load') });
 
   }, [userInfo]);
 
@@ -30,26 +30,24 @@ function Balance() {
     hideMessage();
     if (window.innerHeight < 800 || window.innerWidth < 1000) {
       setBackgroundImage(null);
-      return;
-    }
-    if (isDeposit) {
+    } else if (isDeposit) {
       setBackgroundImage(`url(${depositBg})`);
     } else {
       setBackgroundImage(`url(${withdrawalBg})`);
     }
     setSum('');
     checkDeposit().then(status => {
-      if (status != null && status !== 'processing') { 
+      if (status != null && status !== 'processing') {
         getBalance().then(balance => setBalance(balance)).catch(() => { });
         getNotifications().then(notifications => notificationInfo.notifications = notifications).catch(() => { });
-        
+
       }
     }).catch(() => { });
   }, [isDeposit, notificationInfo]);
-  
+
   const pageName = isDeposit ? 'Make a deposit' : 'Withdraw money';
   const buttonName = isDeposit ? 'Pay' : 'Withdraw';
-  
+
   async function updateBalance(e) {
     e.preventDefault();
     hideMessage();
@@ -66,19 +64,20 @@ function Balance() {
       return;
     }
     makeTransaction(Math.round(+sum * 100) / 100, isDeposit).then(redirect_url => {
-      if (isDeposit) { 
+      if (isDeposit) {
         window.location.replace(redirect_url);
       } else {
         getBalance().then(balance => setBalance(balance)).catch(() => { });
         showResult('You will see result in notifications', '.balance-form');
       }
-    }).catch(e => { console.log(e);
+    }).catch(e => {
+      console.log(e);
       let message = e.response?.data?.message ?? 'Server error';
       showError(undefined, message, '.balance-form');
     });
   }
   let location = useLocation().pathname;
-  if (location[-1] === '/') { 
+  if (location[-1] === '/') {
     location = location.slice(0, -1);
   }
   return (

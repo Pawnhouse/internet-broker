@@ -102,7 +102,7 @@ function Article() {
               <div>
                 {
                   labels.map(label => (
-                    <Button variant='secondary' onClick={() => onRelatedClick(label)} className='rounded-button ms-3'>
+                    <Button variant='secondary' onClick={() => onRelatedClick(label)} className='rounded-button ms-3' key={label.code ?? 1}>
                       {label.code ? '$' + label.code : 'World Market'}
                     </Button>
                   ))
